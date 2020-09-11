@@ -71,3 +71,55 @@ poetry run isort --recursive --apply app tests
 ```
 > **_`Knowledge`_**
 > - Code formatting with `black`, `isort`, `autoflake`
+
+### Code linting: Style enforcement with `flake8`
+Install package
+```commandline
+poetry add -D flake8
+```
+Add this config to setup.cfg:
+```ini
+[flake8]
+ignore = E203, E266, E501, W503
+max-line-length = 88
+max-complexity = 18
+select = B,C,E,F,W,T4
+```
+Now can run `flake8`
+```commandline
+poetry run flake8
+```
+### Code linting: Static types with mypy
+Install package
+```commandline
+poetry add pydantic 
+poetry add -D mypy sqlalchemy-stubs
+```
+Add this to setup.cfg
+```ini
+[mypy]
+plugins = pydantic.mypy, sqlmypy
+follow_imports = silent
+strict_optional = True
+warn_redundant_casts = True
+warn_unused_ignores = True
+disallow_any_generics = True
+check_untyped_defs = True
+;no_implicit_reexport = True
+
+# for strict mypy: (this is the tricky one :-))
+disallow_untyped_defs = True
+
+[pydantic-mypy]
+init_forbid_extra = True
+init_typed = True
+warn_required_dynamic_aliases = True
+warn_untyped_fields = True
+```
+Now can run `mypy`
+```commandline
+poetry run mypy --show-error-codes app
+```
+
+> **_`Knowledge`_**
+> - Code linting with `flake8`, `mypy`
