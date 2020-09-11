@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI
 
 from app.api import api
 

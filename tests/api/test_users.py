@@ -6,4 +6,4 @@ from httpx import AsyncClient
 async def test_read_users(async_client: AsyncClient):
     response = await async_client.get("/api/users")
     assert response.status_code == 200
-    assert response.json() == [{'username': 'Foo'}, {'username': 'Bar'}]
+    assert response.json() == [{"username": "Foo"}, {"username": "Bar"}]
