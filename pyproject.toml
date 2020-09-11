@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "fastapi-async-realworld"
+version = "0.1.0"
+description = "Realworld app API implementation using FastAPI, async SQL database"
+authors = ["congdh <congdh2812@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.61.1"
+uvicorn = "^0.11.8"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.0.1"
+pytest-cov = "^2.10.1"
+pytest-asyncio = "^0.14.0"
+httpx = "^0.14.3"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
