@@ -1,5 +1,3 @@
-SHELL := /bin/bash
-.POSIX:
 .DEFAULT_GOAL = default
 default: clean format lint coverage
 
@@ -35,13 +33,14 @@ lint: ## Lint files
 	poetry run mypy --show-error-codes app
 	poetry run flake8
 	poetry run bandit -r --ini setup.cfg
+	poetry run safety check
 
 .PHONY: test
-test:
+test: ## Test
 	poetry run pytest
 
 .PHONY: coverage
-coverage:
+coverage: ## Test coverage
 	poetry run pytest --cov=app --cov-report=term-missing tests
 
 .PHONY: run-dev

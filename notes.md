@@ -214,6 +214,18 @@ bandit -r --ini setup.cfg
 > **_`Knowledge`_**
 > - Security analysis static source code for python project by `bandit`
 
+### Code linting: Checks your installed dependencies for known security vulnerabilitie with `safety`
+Install package
+```commandline
+poetry add -D safety
+```
+Lets run safety
+```commandline
+safety check
+```
+> **_`Knowledge`_**
+> - Check vulnerability dependencies
+
 ### Git Pre-commit hooks: Run checks automatically before git commits
 Install package
 ```commandline
