@@ -211,3 +211,78 @@ Lets run bandit
 ```commandline
 bandit -r --ini setup.cfg
 ```
+> **_`Knowledge`_**
+> - Security analysis static source code for python project by `bandit`
+
+### Git Pre-commit hooks: Run checks automatically before git commits
+Install package
+```commandline
+poetry add -D pre-commit
+pre-commit install
+```
+Create file `.pre-commit-config.yaml` with content
+```yaml
+repos:
+  - repo: https://github.com/myint/autoflake
+    rev: v1.4
+    hooks:
+      - id: autoflake
+        name: autoflake
+        entry: autoflake
+        language: python
+        'types': [ python ]
+        require_serial: true
+  - repo: https://github.com/ambv/black
+    rev: stable
+    hooks:
+      - id: black
+  - repo: https://github.com/pycqa/isort
+    rev: 5.5.2
+    hooks:
+      - id: isort
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.782
+    hooks:
+      - id: mypy
+        files: ^app/
+        entry: mypy --show-error-codes --no-warn-unused-ignores --follow-imports silent app
+        pass_filenames: false
+        additional_dependencies:
+          - 'pydantic'
+          - 'sqlalchemy-stubs'
+  - repo: https://gitlab.com/PyCQA/flake8
+    rev: 3.8.3
+    hooks:
+      - id: flake8
+        name: flake8
+        description: '`flake8` is a command-line utility for enforcing style consistency across Python projects.'
+        entry: flake8
+        language: python
+        types: [ python ]
+        require_serial: true
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.6.2
+    hooks:
+      - id: bandit
+        args: ["-x", "tests"]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.5.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-docstring-first
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: detect-private-key
+      - id: mixed-line-ending
+```
+Test with command
+```commandline
+poetry run pre-commit run --all-file
+```
+
+> **_`Knowledge`_**
+> - Run checks automatically before git commits

@@ -26,4 +26,3 @@ uvicorn app.main:app --reload
 ```
 
 Open [Swagger docs](http://127.0.0.1:8000/docs) or [Redoc](http://127.0.0.1:8000/redoc)
-
