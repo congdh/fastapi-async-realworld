@@ -39,7 +39,7 @@ Follow tutorial [Async Tests](https://fastapi.tiangolo.com/advanced/async-tests/
 > - Async testing for FastAPI
 
 ### Code formatting with `black`, `isort`, `autoflake`
-Let's install them using `poetry` as development dependencies so they don't clutter a deployment 
+Let's install them using `poetry` as development dependencies so they don't clutter a deployment
 ```commandline
 poetry add -D --allow-prereleases black
 poetry add -D isort
@@ -92,7 +92,7 @@ poetry run flake8
 ### Code linting: Static types with mypy
 Install package
 ```commandline
-poetry add pydantic 
+poetry add pydantic
 poetry add -D mypy sqlalchemy-stubs
 ```
 Add this to setup.cfg
@@ -195,3 +195,19 @@ make
 
 > **_`Knowledge`_**
 > - Make to leverage muscle memory
+
+### Code linting: Security linting with `bandit`
+Install package
+```commandline
+poetry add -D bandit
+```
+Add this to setup.cfg
+```ini
+[bandit]
+exclude: /tests
+targets: .
+```
+Lets run bandit
+```commandline
+bandit -r --ini setup.cfg
+```

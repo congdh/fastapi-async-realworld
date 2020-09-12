@@ -29,6 +29,7 @@ format:
 lint:
 	poetry run mypy --show-error-codes app
 	poetry run flake8
+	poetry run bandit -r --ini setup.cfg
 
 .PHONY: test
 test:
