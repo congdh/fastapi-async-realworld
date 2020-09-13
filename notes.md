@@ -298,3 +298,58 @@ poetry run pre-commit run --all-file
 
 > **_`Knowledge`_**
 > - Run checks automatically before git commits
+
+### Deployment with docker
+#### Dockerfile
+Follow tutorial [FastAPI Deployment](https://fastapi.tiangolo.com/deployment/).
+
+Then, install install packages with poetry in Dockerfile using example [Using Poetry](https://github.com/tiangolo/uvicorn-gunicorn-fastapi-docker#using-poetry)
+Dockerfile
+```dockerfile
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
+
+# Install Poetry
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_HOME=/opt/poetry python && \
+    cd /usr/local/bin && \
+    ln -s /opt/poetry/bin/poetry && \
+    poetry config virtualenvs.create false
+
+# Copy using poetry.lock* in case it doesn't exist yet
+COPY ./pyproject.toml ./poetry.lock* /app/
+
+
+RUN poetry install --no-root --no-dev
+
+COPY ./app /app/app
+```
+Build image and run container
+```commandline
+docker build -t myimage .
+docker run -d --name mycontainer -p 80:80 myimage
+```
+Test
+```shell script
+curl localhost:80/api/users | jq
+```
+Open docs http://127.0.0.1:80/docs
+
+#### Docker compose
+Create `docker-compose.yml`
+```yaml
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - 80:80
+```
+Lets run
+```commandline
+docker-compose up
+```
+And test
+Test
+```shell script
+curl localhost:80/api/users | jq
+```
