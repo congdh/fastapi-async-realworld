@@ -19,10 +19,12 @@ For more information on how to this works with other frontends/backends, head ov
 
 
 # Getting started
-
+First, start postgres database
+```bash
+docker-compose up -d db
 ```
+Then, bootstrap your environment with `poetry`
+```
+poetry install
 poetry shell
-uvicorn app.main:app --reload
 ```
-
-Open [Swagger docs](http://127.0.0.1:8000/docs) or [Redoc](http://127.0.0.1:8000/redoc)

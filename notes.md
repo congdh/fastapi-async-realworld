@@ -353,3 +353,30 @@ Test
 ```shell script
 curl localhost:80/api/users | jq
 ```
+
+## Database setup
+Add postgres service into `docker-compose.yml`
+```yaml
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - 80:80
+  db:
+    image: postgres:12
+    volumes:
+      - app-db-data:/var/lib/postgresql/data/pgdata
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+
+volumes:
+  app-db-data:
+```
+and start it
+```commandline
+docker-compose up db
+```
