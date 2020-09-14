@@ -30,3 +30,16 @@ class UserWithToken(UserBase):
 
 class UserResponse(BaseModel):
     user: UserWithToken
+
+
+class LoginUser(BaseModel):
+    email: str
+    password: SecretStr
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "email": "ahart@yahoo.com",
+                "password": "changeit",
+            }
+        }
