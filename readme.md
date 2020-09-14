@@ -16,7 +16,48 @@ For more information on how to this works with other frontends/backends, head ov
 # How it works
 
 > Describe the general architecture of your app here
-
+```
+.
+├── Dockerfile
+├── LICENSE
+├── Makefile
+├── app
+│   ├── __init__.py
+│   ├── api
+│   │   ├── __init__.py
+│   │   ├── api.py
+│   │   └── routers
+│   ├── core
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   └── security.py
+│   ├── crud
+│   │   ├── __init__.py
+│   │   └── users.py
+│   ├── db.py
+│   ├── main.py
+│   └── schemas
+│       ├── __init__.py
+│       └── user.py
+├── docker-compose.yml
+├── logo.png
+├── notes.md
+├── poetry.lock
+├── postman
+│   ├── Conduit.postman_collection.json
+│   ├── README.md
+│   ├── run-api-tests.sh
+│   └── swagger.json
+├── pyproject.toml
+├── readme.md
+├── setup.cfg
+└── tests
+    ├── __init__.py
+    ├── api
+    │   ├── __init__.py
+    │   └── test_users.py
+    └── conftest.py
+```
 
 # Getting started
 First, start postgres database

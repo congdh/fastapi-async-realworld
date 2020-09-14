@@ -92,7 +92,7 @@ poetry run flake8
 ### Code linting: Static types with mypy
 Install package
 ```commandline
-poetry add pydantic
+poetry add pydantic -E email
 poetry add -D mypy sqlalchemy-stubs
 ```
 Add this to setup.cfg
@@ -380,3 +380,37 @@ and start it
 ```commandline
 docker-compose up db
 ```
+
+## Postgres asynchronously
+> Reference:
+> - [Developing and Testing an Asynchronous API with FastAPI and Pytest](https://testdriven.io/blog/fastapi-crud/)
+> - [Async SQL (Relational) Databases with FastAPI](https://fastapi.tiangolo.com/advanced/async-sql-databases/)
+> - [Using database with Starlette](https://www.starlette.io/database/)
+
+```commandline
+poetry add asyncpg psycopg2-binary databases
+poetry add python-jose -E cryptography
+poetry add passlib bcrypt
+poetry add -D Faker
+```
+
+Notable package/class
+- **`db.py`** SQLAlchemy parts: Declare, configure database
+- **`schemas`** Pydantic models. Read, write data interface with API
+- **`crud`** CRUD utils, which have reusable functions to interact with the data in the database
+- **`core`** Core utils, which have function/variable to run app like config, secuirty ...
+
+Difference between Asynchronous and Synchronous with SQL database
+
+| | Asynchronous | Synchronous |
+|----------|-------------|------|
+| Database models |  sqlalchemy.Table | sqlalchemy.ext.declarative.as_declarative |
+| Connect and disconnect | event handlers (startup & shutdown) | Don't care |
+| ORM | Not support | Support |
+| CRUD | databases.Database | sqlalchemy.orm.Session |
+| Test | database.connect() before & database.disconnect() after | Don't care |
+
+> **_Note_**: This comparison only apply for [encode/databases](https://github.com/encode/databases) library
+
+> **_`Knowledge`_**
+> - Async SQL database with `encode/databases`
