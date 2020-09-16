@@ -43,3 +43,7 @@ class LoginUser(BaseModel):
                 "password": "changeit",
             }
         }
+
+
+class UserUpdate(UserBase):
+    password: Optional[str] = Field(None, example="changeit")

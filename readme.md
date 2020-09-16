@@ -69,3 +69,7 @@ Then, bootstrap your environment with `poetry`
 poetry install
 poetry shell
 ```
+Run application
+```shell script
+uvicorn app.main:app --reload
+```

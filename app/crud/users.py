@@ -26,6 +26,22 @@ async def get_user_by_email(email: str) -> Optional[Mapping[str, Any]]:
     return await database.fetch_one(query=query)
 
 
+async def get_user_by_username(username: str) -> Optional[Mapping[str, Any]]:
+    query = db.users.select().where(username == db.users.c.username)
+    return await database.fetch_one(query=query)
+
+
+async def update(id: int, payload: schemas.UserUpdate) -> int:
+    update_data = payload.dict(exclude_unset=True)
+    query = (
+        db.users.update()
+        .where(id == db.users.c.id)
+        .values(update_data)
+        .returning(db.users.c.id)
+    )
+    return await database.execute(query=query)
+
+
 async def authenticate(email: str, password: SecretStr) -> Optional[schemas.UserDB]:
     user_row = await get_user_by_email(email=email)
     if not user_row:

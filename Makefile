@@ -35,6 +35,9 @@ lint: ## Lint files
 	poetry run bandit -r --ini setup.cfg
 	poetry run safety check
 
+.PHONY: lint
+pre-commit: ## Format & lint before commit
+	poetry run pre-commit run --all-file
 .PHONY: test
 test: ## Test
 	poetry run pytest
