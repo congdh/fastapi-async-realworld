@@ -416,3 +416,13 @@ Difference between Asynchronous and Synchronous with SQL database
 
 > **_`Knowledge`_**
 > - Async SQL database with `encode/databases`
+
+## Test API using Postman collection with npx
+Beside pytest, you can test api using Postman collection with npx (npm package executor). The postman collection and script file is stored in `postman` directory. Read more details [here](postman/README.md)
+```bash
+cd postman
+APIURL=http://localhost:8000/api bash ./run-api-tests.sh
+```
+
+> **_`Knowledge`_**
+> - Test API using Postman collection with npx
