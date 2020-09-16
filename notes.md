@@ -399,6 +399,8 @@ Notable package/class
 - **`schemas`** Pydantic models. Read, write data interface with API
 - **`crud`** CRUD utils, which have reusable functions to interact with the data in the database
 - **`core`** Core utils, which have function/variable to run app like config, secuirty ...
+- **api/deps.py** Dependency variable which used in API function
+
 
 Difference between Asynchronous and Synchronous with SQL database
 
