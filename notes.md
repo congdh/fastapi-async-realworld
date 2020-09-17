@@ -426,3 +426,45 @@ APIURL=http://localhost:8000/api bash ./run-api-tests.sh
 
 > **_`Knowledge`_**
 > - Test API using Postman collection with npx
+
+## Database migration with Alembic
+> Reference: [Database migrations](https://www.starlette.io/database/#migrations)
+
+Add alembic package using poetry
+```commandline
+poetry add alembic
+```
+
+Init alembic
+```commandline
+alembic init alembic
+```
+
+that will create config file `alembic.ini` and directory `alembic`
+In alembic.ini remove the following line:
+```ini
+sqlalchemy.url = driver://user:pass@localhost/dbname
+```
+In migrations/env.py, you need to set the 'sqlalchemy.url' configuration key, and the target_metadata variable
+```python
+# The Alembic Config object.
+config = context.config
+
+# Configure Alembic to use our DATABASE_URL and our table definitions...
+import app
+config.set_main_option('sqlalchemy.url', str(app.DATABASE_URL))
+target_metadata = app.metadata
+
+...
+```
+Then, create an initial revision:
+```shell script
+alembic revision --autogenerate -m "Create users table"
+```
+Running our first migration
+```shell script
+$ alembic upgrade head
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 8ebc5ea3592e, Create users table
+```

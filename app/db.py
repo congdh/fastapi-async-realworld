@@ -1,18 +1,15 @@
-import os
-
 import sqlalchemy
 from databases import Database
 from sqlalchemy import Column, Integer, MetaData, String, create_engine
 
-DEFAULT_DATABASE_URL = "postgresql://postgres:postgres@127.0.0.1/realworld"
-DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)
+from app.core.config import settings
 
 # SQLAlchemy
-engine = create_engine(DATABASE_URL)
+engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 metadata = MetaData()
 
 # databases query builder
-database = Database(DATABASE_URL)
+database = Database(settings.SQLALCHEMY_DATABASE_URI)
 
 users = sqlalchemy.Table(
     "users",

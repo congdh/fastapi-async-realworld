@@ -2,9 +2,8 @@ import uvicorn  # type: ignore
 from fastapi import FastAPI
 
 from app.api import api
-from app.db import database, engine, metadata
+from app.db import database
 
-metadata.create_all(engine)
 app = FastAPI()
 
 app.include_router(api.api_router, prefix="/api")
