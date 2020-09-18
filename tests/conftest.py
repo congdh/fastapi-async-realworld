@@ -1,13 +1,41 @@
+import pathlib
+import sys
+from os import environ
 from typing import AsyncGenerator
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy_utils import create_database, database_exists, drop_database
 
-from app import schemas
-from app.core import security
-from app.db import database
-from app.main import app
-from tests.utils.user import get_test_user
+from alembic import command
+from alembic.config import Config
+
+environ["TESTING"] = "True"
+
+from app import schemas  # noqa: E402
+from app.core import security  # noqa: E402
+from app.core.config import settings  # noqa: E402
+from app.db import database  # noqa: E402
+from app.main import app  # noqa: E402
+from tests.utils.user import get_test_user  # noqa: E402
+
+sys.path.append(str(pathlib.Path().absolute().parent))
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_test_database():
+    root_dir = pathlib.Path(__file__).absolute().parent.parent
+    ini_file = root_dir.joinpath("alembic.ini").__str__()
+    alembic_directory = root_dir.joinpath("alembic").__str__()
+    url = settings.SQLALCHEMY_DATABASE_URI
+    assert not database_exists(url), "Test database already exists. Aborting tests."
+    create_database(url)  # Create the test database.
+
+    config = Config(ini_file)  # Run the migrations.
+    config.set_main_option("script_location", alembic_directory)
+    command.upgrade(config, "head")
+    yield  # Run the tests.
+    drop_database(url)  # Drop the test database.
 
 
 @pytest.fixture()

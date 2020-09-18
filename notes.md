@@ -468,3 +468,66 @@ INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
 INFO  [alembic.runtime.migration] Will assume transactional DDL.
 INFO  [alembic.runtime.migration] Running upgrade  -> 8ebc5ea3592e, Create users table
 ```
+
+## Test isolation
+Install `sqlalchemy-utils` package
+```shell script
+ poetry add -D sqlalchemy-utils
+```
+
+In config file _`app/core/config.py`_, add `TESTING` config and route to test database when `TESTING` is set
+```python
+class Settings(BaseSettings):
+    TESTING: bool = False
+    # API_V1_STR: str = "/api/v1"
+    SECRET_KEY: str = secrets.token_urlsafe(32)
+    # 60 minutes * 24 hours * 8 days = 8 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
+    POSTGRES_SERVER: str = "127.0.0.1"
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_DB: str = "realworld"
+    SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
+
+    @validator("SQLALCHEMY_DATABASE_URI", pre=True)
+    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+        if isinstance(v, str):
+            return v
+        db_prefix = "test_" if values.get("TESTING") else ""
+        return PostgresDsn.build(
+            scheme="postgresql",
+            user=values.get("POSTGRES_USER"),
+            password=values.get("POSTGRES_PASSWORD"),
+            host=values.get("POSTGRES_SERVER"),
+            path=f"/{db_prefix}{values.get('POSTGRES_DB') or ''}",
+        )
+```
+
+Then prepare test database before run testcase
+```python
+@pytest.fixture(scope="session", autouse=True)
+def create_test_database():
+    root_dir = pathlib.Path(__file__).absolute().parent.parent
+    ini_file = root_dir.joinpath("alembic.ini").__str__()
+    alembic_directory = root_dir.joinpath("alembic").__str__()
+    url = settings.SQLALCHEMY_DATABASE_URI
+    assert not database_exists(url), "Test database already exists. Aborting tests."
+    create_database(url)  # Create the test database.
+
+    config = Config(ini_file)  # Run the migrations.
+    config.set_main_option("script_location", alembic_directory)
+    command.upgrade(config, "head")
+    yield  # Run the tests.
+    drop_database(url)  # Drop the test database.
+```
+Note that you **_MUST_** set `TESTING` environment variable before import app package
+```python
+environ["TESTING"] = "True"
+
+from app import schemas  # noqa: E402
+...
+```
+
+> **_`Knowledge`_**
+> - Test isolation database
+> - Using alembic in code
