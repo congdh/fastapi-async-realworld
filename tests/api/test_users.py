@@ -57,8 +57,21 @@ async def test_register_failure_by_existed_user(async_client: AsyncClient):
 
 
 async def test_user_login_failure(async_client: AsyncClient):
-    login_data = {"user": {"email": "u1596352021", "password": "passwordxxx"}}
+    login_data = {"user": {"email": "u1596352021xxx", "password": "passwordxxx"}}
     r = await async_client.post("/api/users/login", json=login_data)
+    user_response = r.json()
+    assert r.status_code == status.HTTP_400_BAD_REQUEST
+    assert "detail" in user_response
+    assert user_response["detail"] == "Incorrect email or password"
+
+
+async def test_user_login_failure_incorrect_password(
+    async_client: AsyncClient, test_user
+):
+    login_data = {
+        "user": {"email": test_user.email, "password": TEST_USER_PASSWORD + "xxx"}
+    }
+    r = await async_client.post(f"{API_AUTHENTICATION}/login", json=login_data)
     user_response = r.json()
     assert r.status_code == status.HTTP_400_BAD_REQUEST
     assert "detail" in user_response
@@ -91,6 +104,10 @@ async def test_retrieve_current_user_without_token(async_client: AsyncClient):
 async def test_retrieve_current_user_wrong_token(async_client: AsyncClient):
     invalid_authorization = "invalid_authorization"
     headers = {"Authorization": invalid_authorization}
+    r = await async_client.get(API_USERS, headers=headers)
+    assert r.status_code == status.HTTP_403_FORBIDDEN
+
+    headers = {"Authorization": f"{JWT_TOKEN_PREFIX}xxx failed_token"}
     r = await async_client.get(API_USERS, headers=headers)
     assert r.status_code == status.HTTP_403_FORBIDDEN
 
