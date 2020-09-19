@@ -1,7 +1,8 @@
 from typing import Optional
 
-from app import schemas
+from app import db, schemas
 from app.crud import users as crud_user
+from app.db import database
 
 
 async def get_profile_by_username(
@@ -15,6 +16,34 @@ async def get_profile_by_username(
     profile = schemas.Profile(
         username=user.username, bio=user.bio, image=user.image  # type: ignore
     )
-    if requested_user:
-        profile.following = True
+    profile.following = await is_following(user, requested_user)
     return profile
+
+
+async def is_following(
+    user: schemas.UserDB, requested_user: Optional[schemas.UserDB]
+) -> bool:
+    if requested_user is None:
+        return False
+    query = (
+        db.followers_assoc.select()
+        .where(user.id == db.followers_assoc.c.follower)
+        .where(requested_user.id == db.followers_assoc.c.followed_by)
+    )
+    row = await database.fetch_one(query=query)
+    return row is not None
+
+
+async def follow(user: schemas.UserDB, requested_user: schemas.UserDB) -> bool:
+    if await is_following(user=user, requested_user=requested_user):
+        return False
+    query = (
+        db.followers_assoc.insert()
+        .values(
+            follower=user.id,
+            followed_by=requested_user.id,
+        )
+        .returning(db.followers_assoc.c.follower)
+    )
+    row = await database.execute(query=query)
+    return row is not None

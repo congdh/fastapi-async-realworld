@@ -24,6 +24,8 @@ users = sqlalchemy.Table(
 followers_assoc = sqlalchemy.Table(
     "followers_assoc",
     metadata,
-    Column("follower", Integer, ForeignKey("users.id"), nullable=False),
-    Column("followed_by", Integer, ForeignKey("users.id"), nullable=False),
+    Column("follower", Integer, ForeignKey("users.id"), primary_key=True, index=True),
+    Column(
+        "followed_by", Integer, ForeignKey("users.id"), primary_key=True, index=True
+    ),
 )

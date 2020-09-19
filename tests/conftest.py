@@ -21,6 +21,8 @@ from tests.utils.user import get_test_user  # noqa: E402
 
 sys.path.append(str(pathlib.Path().absolute().parent))
 
+DROP_DATABASE_AFTER_TEST = False
+
 
 @pytest.fixture(scope="session", autouse=True)
 def create_test_database():
@@ -28,14 +30,17 @@ def create_test_database():
     ini_file = root_dir.joinpath("alembic.ini").__str__()
     alembic_directory = root_dir.joinpath("alembic").__str__()
     url = settings.SQLALCHEMY_DATABASE_URI
-    assert not database_exists(url), "Test database already exists. Aborting tests."
-    create_database(url)  # Create the test database.
+    if DROP_DATABASE_AFTER_TEST:
+        assert not database_exists(url), "Test database already exists. Aborting tests."
+    elif not database_exists(url):
+        create_database(url)  # Create the test database.
 
     config = Config(ini_file)  # Run the migrations.
     config.set_main_option("script_location", alembic_directory)
     command.upgrade(config, "head")
     yield  # Run the tests.
-    drop_database(url)  # Drop the test database.
+    if DROP_DATABASE_AFTER_TEST:
+        drop_database(url)  # Drop the test database.
 
 
 @pytest.fixture()
@@ -48,6 +53,11 @@ async def async_client() -> AsyncGenerator[AsyncClient, None]:
 
 @pytest.fixture
 async def test_user() -> schemas.UserDB:
+    return await get_test_user()
+
+
+@pytest.fixture
+async def other_user() -> schemas.UserDB:
     return await get_test_user()
 
 
