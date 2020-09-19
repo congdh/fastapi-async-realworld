@@ -8,7 +8,8 @@ from app.core.config import settings
 engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 metadata = MetaData()
 
-database = Database(settings.SQLALCHEMY_DATABASE_URI, force_rollback=settings.TESTING)
+# database = Database(settings.SQLALCHEMY_DATABASE_URI, force_rollback=settings.TESTING)
+database = Database(settings.SQLALCHEMY_DATABASE_URI)
 
 users = sqlalchemy.Table(
     "users",

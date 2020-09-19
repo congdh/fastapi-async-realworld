@@ -47,3 +47,16 @@ async def follow(user: schemas.UserDB, requested_user: schemas.UserDB) -> bool:
     )
     row = await database.execute(query=query)
     return row is not None
+
+
+async def unfollow(user: schemas.UserDB, requested_user: schemas.UserDB) -> bool:
+    if not await is_following(user=user, requested_user=requested_user):
+        return False
+    query = (
+        db.followers_assoc.delete()
+        .where(db.followers_assoc.c.follower == user.id)
+        .where(db.followers_assoc.c.followed_by == requested_user.id)
+        .returning(db.followers_assoc.c.follower)
+    )
+    row = await database.execute(query=query)
+    return row is not None

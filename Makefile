@@ -38,6 +38,7 @@ lint: ## Lint files
 .PHONY: lint
 pre-commit: ## Format & lint before commit
 	poetry run pre-commit run --all-file
+
 .PHONY: test
 test: ## Test
 	poetry run pytest
