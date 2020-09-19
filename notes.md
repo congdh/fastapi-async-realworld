@@ -547,3 +547,8 @@ followers_assoc = sqlalchemy.Table(
 ```shell script
 alembic revision --autogenerate -m "Create followers_assoc table"
 ```
+
+Create schema, crud, api route and testcase for Profile API
+
+> **_`Knowledge`_**
+> - Using Callable with Depends

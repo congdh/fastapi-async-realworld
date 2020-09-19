@@ -17,7 +17,7 @@ router = APIRouter()
     response_model=schemas.UserResponse,
 )
 async def retrieve_current_user(
-    current_user: schemas.UserDB = Depends(deps.get_current_user),
+    current_user: schemas.UserDB = Depends(deps.get_current_user()),
 ) -> schemas.UserResponse:
     token = security.create_access_token(current_user.id)
     return schemas.UserResponse(
@@ -39,7 +39,7 @@ async def retrieve_current_user(
 )
 async def update_current_user(
     user_update: schemas.UserUpdate = Body(..., embed=True, alias="user"),
-    current_user: schemas.UserDB = Depends(deps.get_current_user),
+    current_user: schemas.UserDB = Depends(deps.get_current_user()),
 ) -> schemas.UserResponse:
     if user_update.username and user_update.username != current_user.username:
         user_row = await crud_user.get_user_by_username(username=user_update.username)
