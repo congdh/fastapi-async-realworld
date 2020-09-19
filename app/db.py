@@ -30,3 +30,9 @@ followers_assoc = sqlalchemy.Table(
         "followed_by", Integer, ForeignKey("users.id"), primary_key=True, index=True
     ),
 )
+
+tags = sqlalchemy.Table(
+    "tags",
+    metadata,
+    Column("tag", String, primary_key=True, index=True),
+)

@@ -552,3 +552,20 @@ Create schema, crud, api route and testcase for Profile API
 
 > **_`Knowledge`_**
 > - Using Callable with Depends
+
+# Tags API
+Create `tags` table using alembic
+
+```python
+tags = sqlalchemy.Table(
+    "tags",
+    metadata,
+    Column("tag", String, primary_key=True, index=True),
+)
+```
+
+```shell script
+alembic revision --autogenerate -m "Create tags table"
+```
+
+Create crud, api route and testcase for Tags API

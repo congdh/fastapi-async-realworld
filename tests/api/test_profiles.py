@@ -1,5 +1,4 @@
 import pytest
-from devtools import debug
 from httpx import AsyncClient
 from starlette import status
 
@@ -15,7 +14,6 @@ async def test_get_profile_without_authorized(
     async_client: AsyncClient, test_user: schemas.UserDB
 ):
     r = await async_client.get(f"{API_PROFILES}/{test_user.username}")
-    debug(r.json())
     assert r.status_code == status.HTTP_200_OK
     profile_response = schemas.ProfileResponse(**r.json())
     profile = profile_response.profile
@@ -29,7 +27,6 @@ async def test_get_profile_with_authorized(
 ):
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
     r = await async_client.get(f"{API_PROFILES}/{test_user.username}", headers=headers)
-    debug(r.json())
     assert r.status_code == status.HTTP_200_OK
     profile_response = schemas.ProfileResponse(**r.json())
     profile = profile_response.profile
@@ -62,7 +59,6 @@ async def test_follow_without_authorized(
     async_client: AsyncClient, other_user: schemas.UserDB
 ):
     r = await async_client.post(f"{API_PROFILES}/{other_user.username}/follow")
-    debug(r.json())
     assert r.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -76,7 +72,6 @@ async def test_follow_not_existed_user(
     r = await async_client.post(
         f"{API_PROFILES}/{other_user.username}xxx/follow", headers=headers
     )
-    debug(r.json())
     assert r.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -87,7 +82,6 @@ async def test_follow_yourself(
     r = await async_client.post(
         f"{API_PROFILES}/{test_user.username}/follow", headers=headers
     )
-    debug(r.json())
     assert r.status_code == status.HTTP_400_BAD_REQUEST
     assert r.json().get("detail"), "cannot follow yourself"
 
@@ -104,7 +98,6 @@ async def test_follow_user_who_follow_already(
     r = await async_client.post(
         f"{API_PROFILES}/{other_user.username}/follow", headers=headers
     )
-    debug(r.json())
     assert r.status_code == status.HTTP_400_BAD_REQUEST
     assert r.json().get("detail"), "you follow this user already"
 
@@ -119,7 +112,6 @@ async def test_follow_user(
     r = await async_client.post(
         f"{API_PROFILES}/{other_user.username}/follow", headers=headers
     )
-    debug(r.json())
     assert r.status_code == status.HTTP_200_OK
     profile_response = schemas.ProfileResponse(**r.json())
     profile = profile_response.profile
@@ -133,7 +125,6 @@ async def test_unfollow_without_authorized(
     async_client: AsyncClient, other_user: schemas.UserDB
 ):
     r = await async_client.delete(f"{API_PROFILES}/{other_user.username}/follow")
-    debug(r.json())
     assert r.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -147,7 +138,6 @@ async def test_unfollow_not_existed_user(
     r = await async_client.delete(
         f"{API_PROFILES}/{other_user.username}xxx/follow", headers=headers
     )
-    debug(r.json())
     assert r.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -158,7 +148,6 @@ async def test_unfollow_yourself(
     r = await async_client.delete(
         f"{API_PROFILES}/{test_user.username}/follow", headers=headers
     )
-    debug(r.json())
     assert r.status_code == status.HTTP_400_BAD_REQUEST
     assert r.json().get("detail"), "cannot follow yourself"
 
@@ -173,7 +162,6 @@ async def test_unfollow_user_you_dont_follow_already(
     r = await async_client.delete(
         f"{API_PROFILES}/{other_user.username}/follow", headers=headers
     )
-    debug(r.json())
     assert r.status_code == status.HTTP_400_BAD_REQUEST
     assert r.json().get("detail"), "you don't follow this user already"
 
@@ -190,7 +178,6 @@ async def test_unfollow_user(
     r = await async_client.delete(
         f"{API_PROFILES}/{other_user.username}/follow", headers=headers
     )
-    debug(r.json())
     assert r.status_code == status.HTTP_200_OK
     profile_response = schemas.ProfileResponse(**r.json())
     profile = profile_response.profile
