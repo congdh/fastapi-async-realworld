@@ -531,3 +531,19 @@ from app import schemas  # noqa: E402
 > **_`Knowledge`_**
 > - Test isolation database
 > - Using alembic in code
+
+# Profiles API
+Create `followers_assoc` table using alembic
+
+```python
+followers_assoc = sqlalchemy.Table(
+    "followers_assoc",
+    metadata,
+    Column("follower", Integer, ForeignKey("users.id"), nullable=False),
+    Column("followed_by", Integer, ForeignKey("users.id"), nullable=False)
+)
+```
+
+```shell script
+alembic revision --autogenerate -m "Create followers_assoc table"
+```

@@ -1,6 +1,6 @@
 import sqlalchemy
 from databases import Database
-from sqlalchemy import Column, Integer, MetaData, String, create_engine
+from sqlalchemy import Column, ForeignKey, Integer, MetaData, String, create_engine
 
 from app.core.config import settings
 
@@ -19,4 +19,11 @@ users = sqlalchemy.Table(
     Column("bio", String, index=True),
     Column("image", String, nullable=True),
     Column("hashed_password", String, nullable=False),
+)
+
+followers_assoc = sqlalchemy.Table(
+    "followers_assoc",
+    metadata,
+    Column("follower", Integer, ForeignKey("users.id"), nullable=False),
+    Column("followed_by", Integer, ForeignKey("users.id"), nullable=False),
 )
