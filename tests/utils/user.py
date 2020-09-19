@@ -2,7 +2,7 @@ from faker import Faker
 from pydantic import SecretStr
 
 from app import schemas
-from app.crud import users as crud_user
+from app.crud import crud_user
 
 TEST_USER_PASSWORD = "changeit"
 

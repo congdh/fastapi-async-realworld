@@ -2,7 +2,7 @@ from fastapi import APIRouter, Body, HTTPException
 
 from app import schemas
 from app.core import security
-from app.crud import users as crud_user
+from app.crud import crud_user
 
 router = APIRouter()
 

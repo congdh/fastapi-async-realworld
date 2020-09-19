@@ -1,7 +1,7 @@
 from typing import Optional
 
 from app import db, schemas
-from app.crud import users as crud_user
+from app.crud import crud_user
 from app.db import database
 
 

@@ -5,7 +5,7 @@ from starlette.status import HTTP_400_BAD_REQUEST
 from app import schemas
 from app.api import deps
 from app.core import security
-from app.crud import users as crud_user
+from app.crud import crud_user
 
 router = APIRouter()
 

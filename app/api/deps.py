@@ -6,7 +6,7 @@ from starlette import status
 
 from app import schemas
 from app.core import security
-from app.crud import users as crud_user
+from app.crud import crud_user
 
 JWT_TOKEN_PREFIX = "Token"  # noqa: S105
 

@@ -4,8 +4,7 @@ from starlette import status
 
 from app import schemas
 from app.api import deps
-from app.crud import crud_profile
-from app.crud import users as crud_user
+from app.crud import crud_profile, crud_user
 
 router = APIRouter()
 
