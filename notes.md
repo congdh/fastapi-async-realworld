@@ -569,3 +569,145 @@ alembic revision --autogenerate -m "Create tags table"
 ```
 
 Create crud, api route and testcase for Tags API
+
+# Articles API
+Install slugify package
+
+```shell script
+poetry add python-slugify
+```
+Design database diagram using [dbdiagram.io](https://dbdiagram.io)
+
+```
+Table users as U {
+  id int [pk, increment] // auto-increment
+  email varchar
+  username varchar
+  bio text
+  image varchar
+}
+
+Table follow_assoc{
+  follower int [pk]
+  follow_by int [pk]
+}
+Ref: follow_assoc.follower > users.id
+Ref: follow_assoc.follow_by > users.id
+
+Table articles {
+  id int [pk, increment] // auto-increment
+  slug varchar [not null, unique]
+  title varchar
+  description varchar
+  body varchar
+  author_id int
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Ref: articles.author_id > users.id
+
+Table tags {
+  tag varchar [pk]
+}
+
+Table tag_assoc {
+  article_id int [pk]
+  tag varchar [pk]
+
+
+}
+
+Ref: tag_assoc.article_id > articles.id
+Ref: tag_assoc.tag > tags.tag
+
+Table favoriter_assoc{
+  user_id int [pk]
+  article_id int [pk]
+}
+Ref: favoriter_assoc.user_id > users.id
+Ref: favoriter_assoc.article_id > articles.id
+
+Table comments{
+  id int [pk, increment] // auto-increment
+  body text
+  author_id int
+  article_id int
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+Ref: comments.author_id > users.id
+Ref: comments.article_id > articles.id
+
+```
+
+Create tables using alembic
+
+```python
+articles = sqlalchemy.Table(
+    "articles",
+    metadata,
+    Column("id", Integer, primary_key=True, index=True),
+    Column("slug", String, unique=True),
+    Column("title", String),
+    Column("description", String),
+    Column("body", String),
+    Column("author_id", Integer, ForeignKey("users.id")),
+    Column(
+        "created_at",
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    ),
+    Column(
+        "updated_at",
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    ),
+)
+
+tag_assoc = sqlalchemy.Table(
+    "tag_assoc",
+    metadata,
+    Column("article_id", Integer, primary_key=True, index=True),
+    Column("tag", ForeignKey("tags.tag"), primary_key=True),
+)
+
+favoriter_assoc = sqlalchemy.Table(
+    "favoriter_assoc",
+    metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("article_id", Integer, ForeignKey("articles.id"), primary_key=True),
+)
+
+comments = sqlalchemy.Table(
+    "comments",
+    metadata,
+    Column("id", Integer, primary_key=True, index=True),
+    Column("body", String),
+    Column("author_id", Integer, ForeignKey("users.id")),
+    Column("article_id", Integer, ForeignKey("articles.id")),
+    Column(
+        "created_at",
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    ),
+    Column(
+        "updated_at",
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    ),
+)
+```
+
+```shell script
+alembic revision --autogenerate -m "Create articles, comments table"
+```
+
+Create crud, api route and testcase for Articles API
+
+> **_`Knowledge`_**
+> - Desing ER diagrams using dbdiagram.io => Simple, Painlessly
