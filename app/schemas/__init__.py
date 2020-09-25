@@ -1,3 +1,3 @@
-from .article import *  # noqa
-from .profile import *  # noqa
-from .user import *  # noqa
+from .user import *  # noqa # isort:skip
+from .profile import *  # noqa # isort:skip
+from .article import *  # noqa # isort:skip
