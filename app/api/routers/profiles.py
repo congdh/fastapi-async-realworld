@@ -1,4 +1,3 @@
-from devtools import debug
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
@@ -81,7 +80,6 @@ async def unfollow_user(
     username: str,
     requested_user: schemas.UserDB = Depends(deps.get_current_user()),
 ) -> schemas.ProfileResponse:
-    debug(username)
     user_row = await crud_user.get_user_by_username(username=username)
     if user_row is None:
         raise HTTPException(
