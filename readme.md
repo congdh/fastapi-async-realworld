@@ -73,3 +73,23 @@ Run application
 ```shell script
 uvicorn app.main:app --reload
 ```
+
+Test
+
+```shell script
+pytest
+```
+
+Test coverage
+
+```shell script
+poetry run pytest --cov=app --cov-report=term-missing tests
+```
+
+Postman collection test
+
+```shell script
+alembic downgrade base
+alembic upgrade head
+APIURL=http://localhost:8000/api bash ./postman/run-api-tests.sh
+```

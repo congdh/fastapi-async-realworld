@@ -39,3 +39,10 @@ class ArticleForResponse(ArticleBase):
 
 class ArticleInResponse(BaseModel):
     article: ArticleForResponse
+
+
+class ArticleInUpdate(BaseModel):
+    title: Optional[str]
+    description: Optional[str]
+    body: Optional[str]
+    tagList: Optional[List[str]]

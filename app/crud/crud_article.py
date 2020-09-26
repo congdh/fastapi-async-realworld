@@ -1,5 +1,7 @@
+import datetime
 from typing import List, Optional
 
+from devtools import debug
 from slugify import slugify
 from sqlalchemy import func, select
 
@@ -12,6 +14,16 @@ async def add_article_tags(article_id: int, tags: List[str]) -> None:
     if len(tags) > 0:
         values = [{"article_id": article_id, "tag": tag} for tag in tags]
         query = db.tag_assoc.insert().values(values)
+        await database.execute(query=query)
+
+
+async def remove_article_tags(article_id: int, tags: List[str]) -> None:
+    if len(tags) > 0:
+        query = (
+            db.tag_assoc.delete()
+            .where(db.tag_assoc.c.article_id == article_id)
+            .where(db.tag_assoc.c.tag in tags)
+        )
         await database.execute(query=query)
 
 
@@ -79,3 +91,30 @@ async def count_article_favorites(article_id: int) -> int:
     )
     row = await database.fetch_one(query=query)
     return dict(**row).get("count_1", 0)
+
+
+async def update(
+    article_db: schemas.ArticleDB, payload: schemas.ArticleInUpdate
+) -> None:
+    update_data = payload.dict(exclude_unset=True)
+    update_data["updated_at"] = datetime.datetime.now()
+    new_tags = update_data.pop("tagList", None)
+    old_tags = await get_article_tags(article_db.id) if new_tags is not None else []
+    query = (
+        db.articles.update()
+        .where(article_db.id == db.articles.c.id)
+        .values(update_data)
+        .returning(db.articles.c.id)
+    )
+    result = await database.execute(query=query)
+    debug(result)
+    if new_tags is not None:
+        add_tags = list(set(new_tags) - set(old_tags))
+        remove_tags = list(set(old_tags) - set(new_tags))
+        await add_article_tags(article_db.id, add_tags)
+        await remove_article_tags(article_db.id, remove_tags)
+
+
+async def delete(article_db: schemas.ArticleDB) -> None:
+    query = db.articles.delete().where(article_db.id == db.articles.c.id)
+    await database.execute(query=query)
