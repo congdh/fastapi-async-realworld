@@ -179,3 +179,20 @@ async def feed(
     debug(str(query))
     articles = await database.fetch_all(query=query)
     return articles
+
+
+async def favorite(article_id: int, user_id: int) -> None:
+    query = db.favoriter_assoc.insert().values(
+        user_id=user_id,
+        article_id=article_id,
+    )
+    await database.execute(query=query)
+
+
+async def unfavorite(article_id: int, user_id: int) -> None:
+    query = (
+        db.favoriter_assoc.delete()
+        .where(user_id == db.favoriter_assoc.c.user_id)
+        .where(article_id == db.favoriter_assoc.c.article_id)
+    )
+    await database.execute(query=query)

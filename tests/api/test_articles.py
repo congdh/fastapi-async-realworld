@@ -253,3 +253,67 @@ async def test_feed_articles(
         assert hasattr(article, "favoritesCount")
         assert article.favoritesCount == 0
         assert article.author.following, "Feed ariticles must be following"
+
+
+async def test_favorite_article(
+    async_client: AsyncClient,
+    test_user: schemas.UserDB,
+    token: str,
+    other_user: schemas.UserDB,
+):
+    article_in = {
+        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
+        "description": "Ever wonder how?",
+        "body": "You have to believe",
+        "tagList": ["reactjs", "angularjs", "dragons"],
+    }
+    article_in_create = schemas.ArticleInCreate(**article_in)
+    await crud_article.create(article_in_create, other_user.id)
+
+    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    slug = slugify(article_in.get("title"))
+    r = await async_client.post(f"{API_ARTICLES}/{slug}/favorite", headers=headers)
+    assert r.status_code == status.HTTP_200_OK
+    article = schemas.ArticleInResponse(**r.json()).article
+    assert article.title == article_in.get("title")
+    assert article.description == article_in.get("description")
+    assert article.body == article_in.get("body")
+    assert article.author.username == other_user.username
+    assert hasattr(article, "tagList")
+    assert article.tagList == article_in.get("tagList")
+    assert hasattr(article, "favorited")
+    assert article.favorited, "Favorited must be True"
+    assert hasattr(article, "favoritesCount")
+    assert article.favoritesCount > 0, "favoritesCount must great than 0"
+
+
+async def test_unfavorite_article(
+    async_client: AsyncClient,
+    test_user: schemas.UserDB,
+    token: str,
+    other_user: schemas.UserDB,
+):
+    article_in = {
+        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
+        "description": "Ever wonder how?",
+        "body": "You have to believe",
+        "tagList": ["reactjs", "angularjs", "dragons"],
+    }
+    article_in_create = schemas.ArticleInCreate(**article_in)
+    article_id = await crud_article.create(article_in_create, other_user.id)
+    await crud_article.favorite(article_id=article_id, user_id=test_user.id)
+
+    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    slug = slugify(article_in.get("title"))
+    r = await async_client.delete(f"{API_ARTICLES}/{slug}/favorite", headers=headers)
+    assert r.status_code == status.HTTP_200_OK
+    article = schemas.ArticleInResponse(**r.json()).article
+    assert article.title == article_in.get("title")
+    assert article.description == article_in.get("description")
+    assert article.body == article_in.get("body")
+    assert article.author.username == other_user.username
+    assert hasattr(article, "tagList")
+    assert article.tagList == article_in.get("tagList")
+    assert hasattr(article, "favorited")
+    assert not article.favorited, "Favorited must be False"
+    assert hasattr(article, "favoritesCount")
