@@ -1,7 +1,6 @@
 import datetime
 
 import pytest
-from devtools import debug
 from httpx import AsyncClient
 from slugify import slugify
 from starlette import status
@@ -70,7 +69,6 @@ async def test_get_comments_from_an_article(
     slug = slugify(article_in.get("title"))
 
     r = await async_client.get(f"{API_ARTICLES}/{slug}/comments")
-    debug(r.json())
     assert r.status_code == status.HTTP_200_OK
     multi_comments_in_response = schemas.MultipleCommentsInResponse(**r.json())
     assert len(multi_comments_in_response.comments) == 2

@@ -1,7 +1,6 @@
 import datetime
 
 import pytest
-from devtools import debug
 from httpx import AsyncClient
 from slugify import slugify
 from starlette import status
@@ -39,7 +38,6 @@ async def test_create_articles(
     r = await async_client.post(
         f"{API_ARTICLES}", json={"article": article_in}, headers=headers
     )
-    debug(r.json())
     assert r.status_code == status.HTTP_200_OK
     article = schemas.ArticleInResponse(**r.json()).article
     assert article.title == article_in.get("title")
@@ -76,7 +74,6 @@ async def test_get_article(
 
     slug = slugify(article_in.get("title"))
     r = await async_client.get(f"{API_ARTICLES}/{slug}")
-    debug(r.json())
     assert r.status_code == status.HTTP_200_OK
     article = schemas.ArticleInResponse(**r.json()).article
     assert article.title == article_in.get("title")
@@ -110,7 +107,6 @@ async def test_update_article(
     r = await async_client.put(
         f"{API_ARTICLES}/{slug}", json={"article": updated_data}, headers=headers
     )
-    debug(r.json())
     assert r.status_code == status.HTTP_200_OK
     article = schemas.ArticleInResponse(**r.json()).article
     assert (
@@ -195,7 +191,6 @@ async def test_list_articles_without_authentication(
     if favorited:
         params["favorited"] = favorited
     r = await async_client.get(f"{API_ARTICLES}", params=params)
-    debug(r.json())
     assert r.status_code == status.HTTP_200_OK
     assert "articlesCount" in r.json()
     assert "articles" in r.json()
@@ -235,7 +230,6 @@ async def test_feed_articles(
     await crud_profile.follow(other_user, test_user)
 
     r = await async_client.get(f"{API_ARTICLES}/feed", headers=headers)
-    debug(r.json())
     assert r.status_code == status.HTTP_200_OK
     assert "articlesCount" in r.json()
     assert "articles" in r.json()
