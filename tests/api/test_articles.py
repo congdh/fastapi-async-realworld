@@ -7,6 +7,7 @@ from slugify import slugify
 from starlette import status
 
 from app import schemas
+from app.crud import crud_article, crud_profile
 
 pytestmark = pytest.mark.asyncio
 
@@ -157,3 +158,98 @@ async def test_delete_article(
 
     r = await async_client.delete(f"{API_ARTICLES}/{slug}", headers=headers)
     assert r.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.parametrize(
+    "tag,author,favorited",
+    [
+        (None, None, None),
+        ("dragons", None, None),
+        (None, "dragons", None),
+    ],
+)
+async def test_list_articles_without_authentication(
+    async_client: AsyncClient,
+    test_user: schemas.UserDB,
+    token: str,
+    other_user: schemas.UserDB,
+    tag: str,
+    author: str,
+    favorited: str,
+):
+    article_in = {
+        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
+        "description": "Ever wonder how?",
+        "body": "You have to believe",
+        "tagList": ["reactjs", "angularjs", "dragons"],
+    }
+    article_in_create = schemas.ArticleInCreate(**article_in)
+    await crud_article.create(article_in_create, other_user.id)
+    await crud_profile.follow(other_user, test_user)
+
+    params = {}
+    if tag:
+        params["tag"] = tag
+    if author:
+        params["author"] = test_user.username
+    if favorited:
+        params["favorited"] = favorited
+    r = await async_client.get(f"{API_ARTICLES}", params=params)
+    debug(r.json())
+    assert r.status_code == status.HTTP_200_OK
+    assert "articlesCount" in r.json()
+    assert "articles" in r.json()
+    assert r.json().get("articlesCount") == len(r.json().get("articles"))
+    if len(r.json().get("articles")) > 0:
+        article = schemas.ArticleForResponse(**r.json().get("articles")[0])
+        assert article.title == article_in.get("title")
+        assert article.description == article_in.get("description")
+        assert article.body == article_in.get("body")
+        assert article.author.username == other_user.username
+        assert hasattr(article, "tagList")
+        assert article.tagList == article_in.get("tagList")
+        assert hasattr(article, "favorited")
+        assert not article.favorited
+        assert hasattr(article, "favoritesCount")
+        assert article.favoritesCount == 0
+        assert (
+            not article.author.following
+        ), "List ariticles without authentication must be not following"
+
+
+async def test_feed_articles(
+    async_client: AsyncClient,
+    test_user: schemas.UserDB,
+    token: str,
+    other_user: schemas.UserDB,
+):
+    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    article_in = {
+        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
+        "description": "Ever wonder how?",
+        "body": "You have to believe",
+        "tagList": ["reactjs", "angularjs", "dragons"],
+    }
+    article_in_create = schemas.ArticleInCreate(**article_in)
+    await crud_article.create(article_in_create, other_user.id)
+    await crud_profile.follow(other_user, test_user)
+
+    r = await async_client.get(f"{API_ARTICLES}/feed", headers=headers)
+    debug(r.json())
+    assert r.status_code == status.HTTP_200_OK
+    assert "articlesCount" in r.json()
+    assert "articles" in r.json()
+    assert r.json().get("articlesCount") == len(r.json().get("articles"))
+    if len(r.json().get("articles")) > 0:
+        article = schemas.ArticleForResponse(**r.json().get("articles")[0])
+        assert article.title == article_in.get("title")
+        assert article.description == article_in.get("description")
+        assert article.body == article_in.get("body")
+        assert article.author.username == other_user.username
+        assert hasattr(article, "tagList")
+        assert article.tagList == article_in.get("tagList")
+        assert hasattr(article, "favorited")
+        assert not article.favorited
+        assert hasattr(article, "favoritesCount")
+        assert article.favoritesCount == 0
+        assert article.author.following, "Feed ariticles must be following"

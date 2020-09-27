@@ -46,3 +46,8 @@ class ArticleInUpdate(BaseModel):
     description: Optional[str]
     body: Optional[str]
     tagList: Optional[List[str]]
+
+
+class MultipleArticlesInResponse(BaseModel):
+    articles: List[ArticleForResponse]
+    articlesCount: int

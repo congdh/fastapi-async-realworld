@@ -3,10 +3,10 @@ from typing import List, Optional
 
 from devtools import debug
 from slugify import slugify
-from sqlalchemy import func, select
+from sqlalchemy import desc, func, select
 
 from app import db, schemas
-from app.crud import crud_tag
+from app.crud import crud_tag, crud_user
 from app.db import database
 
 
@@ -37,14 +37,14 @@ async def get_article_tags(article_id: int) -> List[str]:
     return [tag.get("tag") for tag in tags]
 
 
-async def create(payload: schemas.ArticleInCreate, current_user: schemas.UserDB) -> int:
+async def create(payload: schemas.ArticleInCreate, author_id: int) -> int:
     slug = slugify(payload.title)
     query = db.articles.insert().values(
         title=payload.title,
         description=payload.description,
         body=payload.body,
         slug=slug,
-        author_id=current_user.id,
+        author_id=author_id,
     )
     article_id = await database.execute(query=query)
     if payload.tagList:
@@ -90,7 +90,7 @@ async def count_article_favorites(article_id: int) -> int:
         .where(db.favoriter_assoc.c.article_id == article_id)
     )
     row = await database.fetch_one(query=query)
-    return dict(**row).get("count_1", 0)
+    return dict(**row).get("count_1", 0)  # type: ignore
 
 
 async def update(
@@ -118,3 +118,64 @@ async def update(
 async def delete(article_db: schemas.ArticleDB) -> None:
     query = db.articles.delete().where(article_db.id == db.articles.c.id)
     await database.execute(query=query)
+
+
+async def get_all(
+    limit: int = 20,
+    offset: int = 0,
+    tag: str = None,
+    author: str = None,
+    favorited: str = None,
+) -> List[schemas.ArticleDB]:
+    need_join = False
+    j = db.articles
+    query = (
+        select([db.articles])
+        .limit(limit)
+        .offset(offset)
+        .order_by(desc(db.articles.c.created_at))
+    )
+    if tag:
+        need_join = True
+        j = j.join(
+            db.tag_assoc, db.articles.c.id == db.tag_assoc.c.article_id
+        )  # type: ignore
+        query = query.where(db.tag_assoc.c.tag == tag)
+    if author:
+        user_row = await crud_user.get_user_by_username(username=author)
+        if user_row:
+            author_id = dict(user_row).get("id")
+            query = query.where(author_id == db.articles.c.author_id)
+    if favorited:
+        user_row = await crud_user.get_user_by_username(username=favorited)
+        if user_row:
+            favorited_id = dict(user_row).get("id")
+            need_join = True
+            j = j.join(
+                db.favoriter_assoc, db.articles.c.id == db.favoriter_assoc.c.article_id
+            )  # type: ignore
+            query = query.where(favorited_id == db.favoriter_assoc.c.user_id)
+    if need_join:
+        query = query.select_from(j)
+    articles = await database.fetch_all(query=query)
+    return articles
+
+
+async def feed(
+    follow_by: int,
+    limit: int = 20,
+    offset: int = 0,
+) -> List[schemas.ArticleDB]:
+    query = (
+        select([db.articles])
+        .limit(limit)
+        .offset(offset)
+        .order_by(desc(db.articles.c.created_at))
+    )
+    j = db.articles.join(
+        db.followers_assoc, db.articles.c.author_id == db.followers_assoc.c.follower
+    )
+    query = query.where(db.followers_assoc.c.followed_by == follow_by).select_from(j)
+    debug(str(query))
+    articles = await database.fetch_all(query=query)
+    return articles
