@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from fastapi import APIRouter
 
@@ -11,8 +11,8 @@ router = APIRouter()
     "",
     name="Get tags",
     description="Get tags. Auth not required",
-    response_model=List[str],
+    response_model=Dict[str, List[str]],
 )
 async def list_all_tags() -> List[str]:
     tags = await crud_tag.get_all_tags()
-    return tags
+    return {"tags": tags}  # type: ignore
