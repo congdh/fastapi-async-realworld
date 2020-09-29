@@ -1,7 +1,6 @@
 import datetime
 from typing import List, Optional
 
-from devtools import debug
 from slugify import slugify
 from sqlalchemy import desc, func, select
 
@@ -106,8 +105,7 @@ async def update(
         .values(update_data)
         .returning(db.articles.c.id)
     )
-    result = await database.execute(query=query)
-    debug(result)
+    await database.execute(query=query)
     if new_tags is not None:
         add_tags = list(set(new_tags) - set(old_tags))
         remove_tags = list(set(old_tags) - set(new_tags))
@@ -176,7 +174,6 @@ async def feed(
         db.followers_assoc, db.articles.c.author_id == db.followers_assoc.c.follower
     )
     query = query.where(db.followers_assoc.c.followed_by == follow_by).select_from(j)
-    debug(str(query))
     articles = await database.fetch_all(query=query)
     return articles
 

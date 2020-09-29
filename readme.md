@@ -62,7 +62,7 @@ For more information on how to this works with other frontends/backends, head ov
 # Getting started
 First, start postgres database
 ```bash
-docker-compose up -d db
+docker-compose up -d db pgadmin
 ```
 Then, bootstrap your environment with `poetry`
 ```
@@ -77,13 +77,13 @@ uvicorn app.main:app --reload
 Test
 
 ```shell script
-pytest
+poetry run pytestpytest
 ```
 
 Test coverage
 
 ```shell script
-poetry run pytest --cov=app --cov-report=term-missing tests
+pytest --cov=app --cov-report=term-missing tests
 ```
 
 Postman collection test
