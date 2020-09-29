@@ -18,7 +18,7 @@ engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 metadata = MetaData()
 
 # database = Database(settings.SQLALCHEMY_DATABASE_URI, force_rollback=settings.TESTING)
-database = Database(settings.SQLALCHEMY_DATABASE_URI)
+database = Database(settings.SQLALCHEMY_DATABASE_URI)  # type: ignore
 
 users = sqlalchemy.Table(
     "users",

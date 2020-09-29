@@ -30,7 +30,7 @@ format: ## Format files
 
 .PHONY: lint
 lint: ## Lint files
-	poetry run mypy --show-error-codes app
+	poetry run mypy --show-error-codes --no-warn-unused-ignores --follow-imports silent app
 	poetry run flake8
 	poetry run bandit -r --ini setup.cfg
 	poetry run safety check

@@ -35,4 +35,3 @@ class CommentInResponse(BaseModel):
 
 class MultipleCommentsInResponse(BaseModel):
     comments: List[CommentForResponse]
-    pass

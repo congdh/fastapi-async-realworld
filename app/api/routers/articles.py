@@ -66,12 +66,11 @@ async def feed_articles(
     limit: int = 20,
     offset: int = 0,
 ) -> schemas.MultipleArticlesInResponse:
-    article_rows = await crud_article.feed(
+    article_dbs = await crud_article.feed(
         limit=limit, offset=offset, follow_by=current_user.id
     )
     articles = []
-    for article_row in article_rows:
-        article_db = schemas.ArticleDB(**article_row)  # type: ignore
+    for article_db in article_dbs:
         profile = await crud_profile.get_profile_by_user_id(
             article_db.author_id, requested_user=current_user
         )
@@ -250,12 +249,11 @@ async def list_articles(
     author: str = None,
     favorited: str = None,
 ) -> schemas.MultipleArticlesInResponse:
-    article_rows = await crud_article.get_all(
+    article_dbs = await crud_article.get_all(
         limit=limit, offset=offset, tag=tag, author=author, favorited=favorited
     )
     articles = []
-    for article_row in article_rows:
-        article_db = schemas.ArticleDB(**article_row)  # type: ignore
+    for article_db in article_dbs:
         profile = await crud_profile.get_profile_by_user_id(
             article_db.author_id, requested_user=current_user
         )

@@ -33,7 +33,7 @@ async def get_article_tags(article_id: int) -> List[str]:
         .where(article_id == db.tag_assoc.c.article_id)
     )
     tags = await database.fetch_all(query=query)
-    return [tag.get("tag") for tag in tags]
+    return [tag.get("tag") for tag in tags]  # type: ignore
 
 
 async def create(payload: schemas.ArticleInCreate, author_id: int) -> int:
@@ -156,7 +156,7 @@ async def get_all(
     if need_join:
         query = query.select_from(j)
     articles = await database.fetch_all(query=query)
-    return articles
+    return [schemas.ArticleDB(**article) for article in articles]
 
 
 async def feed(
@@ -175,7 +175,7 @@ async def feed(
     )
     query = query.where(db.followers_assoc.c.followed_by == follow_by).select_from(j)
     articles = await database.fetch_all(query=query)
-    return articles
+    return [schemas.ArticleDB(**article) for article in articles]
 
 
 async def favorite(article_id: int, user_id: int) -> None:
