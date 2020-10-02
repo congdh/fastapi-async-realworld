@@ -19,6 +19,7 @@ clean: ## Remove all build, test, coverage and Python artifacts
 .PHONY: poetry
 poetry: ## Install poetry
 	poetry install
+	poetry shell
 
 .PHONY: format
 format: ## Format files
@@ -35,7 +36,7 @@ lint: ## Lint files
 	poetry run bandit -r --ini setup.cfg
 	poetry run safety check
 
-.PHONY: lint
+.PHONY: pre-commit
 pre-commit: ## Format & lint before commit
 	poetry run pre-commit run --all-file
 

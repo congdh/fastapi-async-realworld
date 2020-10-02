@@ -1,11 +1,24 @@
 # Implement notes step by step from scratch
 
-> Tham khảo template [Full Stack FastAPI PostgreSQL](https://github.com/tiangolo/full-stack-fastapi-postgresql)
-
 ## Features
 
 - [x] **Poetry**: Package management
+- [x] **FastAPI**: Modern, fast (high-performance) web framework for building APIs with Python
 - [x] **pytest**: Testing
+- [x] **npx**: Test API using Postman collection
+- [x] **isort**: Code formatting - sort imports
+- [x] **autoflake**: Code formatting - removes unused imports and unused variables
+- [x] **black**: Code formatting - The Uncompromising Code Formatter
+- [x] **flake8**: Code linting - Style enforcement
+- [x] **mypy**: Code linting - Static types
+- [x] **bandit**: Code linting - Security linting
+- [x] **safety**: Code linting - Checks installed dependencies for known security vulnerabilities
+- [x] **Git Pre-commit hooks**: Run checks automatically before git commits
+- [x] **Make**: Leverage muscle memory
+- [x] **Docker, docker-compose**: Packaging and deployment
+- [x] **postgres**: SQL database
+- [x] **Alembic**: Database migration
+- [x] **dbdiagram.io**: Design ER diagrams
 
 ## Project setup
 ### Dependency management with `Poetry`
@@ -18,7 +31,7 @@ poetry shell
 > **_`Knowledge`_**
 > - Manage package dependency and virtual environment using `poetry` => Better than old solution using `virtualenvwrapper` + `pip`
 
-## First API: FastAPI helloworld
+### First API: FastAPI helloworld
 Follow tutorial [FastAPI Bigger Applications - Multiple Files](https://fastapi.tiangolo.com/tutorial/bigger-applications/)
 > Skip route `items` because need only simplest API for test configuration and environment
 
@@ -532,7 +545,8 @@ from app import schemas  # noqa: E402
 > - Test isolation database
 > - Using alembic in code
 
-# Profiles API
+## Profiles API
+
 Create `followers_assoc` table using alembic
 
 ```python
@@ -553,7 +567,8 @@ Create schema, crud, api route and testcase for Profile API
 > **_`Knowledge`_**
 > - Using Callable with Depends
 
-# Tags API
+## Tags API
+
 Create `tags` table using alembic
 
 ```python
@@ -570,7 +585,8 @@ alembic revision --autogenerate -m "Create tags table"
 
 Create crud, api route and testcase for Tags API
 
-# Articles API
+## Articles API
+
 Install slugify package
 
 ```shell script
@@ -710,4 +726,4 @@ alembic revision --autogenerate -m "Create articles, comments table"
 Create crud, api route and testcase for Articles API
 
 > **_`Knowledge`_**
-> - Desing ER diagrams using dbdiagram.io => Simple, Painlessly
+> - Design ER diagrams using dbdiagram.io => Simple, Painlessly
