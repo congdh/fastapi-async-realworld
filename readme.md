@@ -105,5 +105,27 @@ APIURL=http://localhost:8000/api bash ./postman/run-api-tests.sh
 ```
 
 # Deployment
+Run docker-compose
+
+```shell script
+docker-compose up -d
+```
 
 # Migrations
+
+Run alembic to migrate database
+```shell script
+alembic upgrade head
+```
+
+Migration for test database
+
+```shell script
+TESTING=TRUE alembic upgrade head
+```
+
+Migration using docker
+
+```shell script
+docker-compose run migration
+```
