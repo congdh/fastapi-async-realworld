@@ -1,7 +1,7 @@
 # ![RealWorld Example App](logo.png)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/1446db35a9754f37a11e25b4632092dd)](https://app.codacy.com/gh/congdh/fastapi-async-realworld?utm_source=github.com&utm_medium=referral&utm_content=congdh/fastapi-async-realworld&utm_campaign=Badge_Grade)
-
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/5b47330b891e48c88fc1f37dfd89d56f)](https://www.codacy.com/gh/congdh/fastapi-async-realworld/dashboard?utm_source=github.com&utm_medium=referral&utm_content=congdh/fastapi-async-realworld&utm_campaign=Badge_Coverage)
 > ### [FastAPI] codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld) spec and API.
 
 
