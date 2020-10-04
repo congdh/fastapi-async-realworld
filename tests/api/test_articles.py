@@ -1,4 +1,5 @@
 import datetime
+from typing import Dict
 
 import pytest
 from httpx import AsyncClient
@@ -40,16 +41,22 @@ async def test_create_articles(
     )
     assert r.status_code == status.HTTP_200_OK
     article = schemas.ArticleInResponse(**r.json()).article
-    assert article.title == article_in.get("title")
-    assert article.description == article_in.get("description")
-    assert article.body == article_in.get("body")
-    assert article.author.username == test_user.username
-    assert hasattr(article, "tagList")
-    assert article.tagList == article_in.get("tagList")
-    assert hasattr(article, "favorited")
-    assert not article.favorited
-    assert hasattr(article, "favoritesCount")
-    assert article.favoritesCount == 0
+    assert_article_in_response(article_in, article, test_user)
+
+
+def assert_article_in_response(
+    expected: Dict, actual: schemas.ArticleInResponse, author: schemas.UserDB
+) -> None:
+    assert actual.title == expected.get("title")
+    assert actual.description == expected.get("description")
+    assert actual.body == expected.get("body")
+    assert actual.author.username == author.username
+    assert hasattr(actual, "tagList")
+    assert actual.tagList == expected.get("tagList")
+    assert hasattr(actual, "favorited")
+    assert not actual.favorited
+    assert hasattr(actual, "favoritesCount")
+    assert actual.favoritesCount == 0
 
 
 async def test_get_article_not_exited(async_client: AsyncClient):
@@ -76,16 +83,7 @@ async def test_get_article(
     r = await async_client.get(f"{API_ARTICLES}/{slug}")
     assert r.status_code == status.HTTP_200_OK
     article = schemas.ArticleInResponse(**r.json()).article
-    assert article.title == article_in.get("title")
-    assert article.description == article_in.get("description")
-    assert article.body == article_in.get("body")
-    assert article.author.username == test_user.username
-    assert hasattr(article, "tagList")
-    assert article.tagList == article_in.get("tagList")
-    assert hasattr(article, "favorited")
-    assert not article.favorited
-    assert hasattr(article, "favoritesCount")
-    assert article.favoritesCount == 0
+    assert_article_in_response(article_in, article, test_user)
 
 
 async def test_update_article(
@@ -197,16 +195,7 @@ async def test_list_articles_without_authentication(
     assert r.json().get("articlesCount") == len(r.json().get("articles"))
     if len(r.json().get("articles")) > 0:
         article = schemas.ArticleForResponse(**r.json().get("articles")[0])
-        assert article.title == article_in.get("title")
-        assert article.description == article_in.get("description")
-        assert article.body == article_in.get("body")
-        assert article.author.username == other_user.username
-        assert hasattr(article, "tagList")
-        assert article.tagList == article_in.get("tagList")
-        assert hasattr(article, "favorited")
-        assert not article.favorited
-        assert hasattr(article, "favoritesCount")
-        assert article.favoritesCount == 0
+        assert_article_in_response(article_in, article, other_user)
         assert (
             not article.author.following
         ), "List ariticles without authentication must be not following"
@@ -236,16 +225,7 @@ async def test_feed_articles(
     assert r.json().get("articlesCount") == len(r.json().get("articles"))
     if len(r.json().get("articles")) > 0:
         article = schemas.ArticleForResponse(**r.json().get("articles")[0])
-        assert article.title == article_in.get("title")
-        assert article.description == article_in.get("description")
-        assert article.body == article_in.get("body")
-        assert article.author.username == other_user.username
-        assert hasattr(article, "tagList")
-        assert article.tagList == article_in.get("tagList")
-        assert hasattr(article, "favorited")
-        assert not article.favorited
-        assert hasattr(article, "favoritesCount")
-        assert article.favoritesCount == 0
+        assert_article_in_response(article_in, article, other_user)
         assert article.author.following, "Feed ariticles must be following"
 
 

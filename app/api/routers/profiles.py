@@ -10,15 +10,8 @@ FOLLOW_SOMETHING_WRONG = "you cannot follow this user because something wrong"
 router = APIRouter()
 
 
-@router.get(
-    "/{username}",
-    name="Get a profile",
-    description="Get a profile of a user of the system. Auth is optional",
-    response_model=schemas.ProfileResponse,
-)
-async def get_profile(
-    username: str,
-    requested_user: schemas.UserDB = Depends(deps.get_current_user(required=False)),
+async def get_profile_response(
+    username: str, requested_user: schemas.UserDB
 ) -> schemas.ProfileResponse:
     profile = await crud_profile.get_profile_by_username(
         username, requested_user=requested_user
@@ -31,6 +24,19 @@ async def get_profile(
     return schemas.ProfileResponse(profile=profile)
 
 
+@router.get(
+    "/{username}",
+    name="Get a profile",
+    description="Get a profile of a user of the system. Auth is optional",
+    response_model=schemas.ProfileResponse,
+)
+async def get_profile(
+    username: str,
+    requested_user: schemas.UserDB = Depends(deps.get_current_user(required=False)),
+) -> schemas.ProfileResponse:
+    return await get_profile_response(requested_user=requested_user, username=username)
+
+
 @router.post(
     "/{username}/follow",
     name="Follow a user",
@@ -41,6 +47,25 @@ async def follow_user(
     username: str,
     requested_user: schemas.UserDB = Depends(deps.get_current_user()),
 ) -> schemas.ProfileResponse:
+    follower_user = await get_follow_user(
+        requested_user=requested_user, username=username
+    )
+    if await crud_profile.is_following(follower_user, requested_user):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="you follow this user already",
+        )
+    if not await crud_profile.follow(follower_user, requested_user):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=FOLLOW_SOMETHING_WRONG,
+        )
+    return await get_profile_response(requested_user=requested_user, username=username)
+
+
+async def get_follow_user(
+    username: str, requested_user: schemas.UserDB
+) -> schemas.UserDB:
     user_row = await crud_user.get_user_by_username(username=username)
     if user_row is None:
         raise HTTPException(
@@ -53,23 +78,7 @@ async def follow_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="cannot follow yourself",
         )
-    if await crud_profile.is_following(follower_user, requested_user):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="you follow this user already",
-        )
-    if not await crud_profile.follow(follower_user, requested_user):
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=FOLLOW_SOMETHING_WRONG,
-        )
-    profile = await crud_profile.get_profile_by_username(username, requested_user)
-    if profile is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=FOLLOW_SOMETHING_WRONG,
-        )
-    return schemas.ProfileResponse(profile=profile)
+    return follower_user
 
 
 @router.delete(

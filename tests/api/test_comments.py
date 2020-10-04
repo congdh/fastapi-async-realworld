@@ -1,4 +1,5 @@
 import datetime
+from typing import Dict
 
 import pytest
 from httpx import AsyncClient
@@ -14,12 +15,7 @@ API_ARTICLES = "/api/articles"
 JWT_TOKEN_PREFIX = "Token"  # noqa: S105
 
 
-async def test_add_comments_to_an_article(
-    async_client: AsyncClient,
-    test_user: schemas.UserDB,
-    token: str,
-    other_user: schemas.UserDB,
-):
+async def create_test_article(author: schemas.UserDB) -> Dict:
     article_in = {
         "title": "How to train your dragon" + datetime.datetime.now().__str__(),
         "description": "Ever wonder how?",
@@ -27,7 +23,17 @@ async def test_add_comments_to_an_article(
         "tagList": ["reactjs", "angularjs", "dragons"],
     }
     article_in_create = schemas.ArticleInCreate(**article_in)
-    await crud_article.create(article_in_create, other_user.id)
+    article_id = await crud_article.create(article_in_create, author.id)
+    return article_in, article_id
+
+
+async def test_add_comments_to_an_article(
+    async_client: AsyncClient,
+    test_user: schemas.UserDB,
+    token: str,
+    other_user: schemas.UserDB,
+):
+    article_in, article_id = await create_test_article(other_user)
 
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
     slug = slugify(article_in.get("title"))
@@ -49,14 +55,7 @@ async def test_get_comments_from_an_article(
     token: str,
     other_user: schemas.UserDB,
 ):
-    article_in = {
-        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
-        "description": "Ever wonder how?",
-        "body": "You have to believe",
-        "tagList": ["reactjs", "angularjs", "dragons"],
-    }
-    article_in_create = schemas.ArticleInCreate(**article_in)
-    article_id = await crud_article.create(article_in_create, other_user.id)
+    article_in, article_id = await create_test_article(other_user)
 
     comment_in = schemas.CommentInCreate(body="His name was my name too.")
     await crud_comment.create(
@@ -86,14 +85,7 @@ async def test_delete_comment_for_article(
     token: str,
     other_user: schemas.UserDB,
 ):
-    article_in = {
-        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
-        "description": "Ever wonder how?",
-        "body": "You have to believe",
-        "tagList": ["reactjs", "angularjs", "dragons"],
-    }
-    article_in_create = schemas.ArticleInCreate(**article_in)
-    article_id = await crud_article.create(article_in_create, other_user.id)
+    article_in, article_id = await create_test_article(other_user)
 
     comment_in = schemas.CommentInCreate(body="His name was my name too.")
     comment_id = await crud_comment.create(
