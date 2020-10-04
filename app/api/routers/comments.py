@@ -5,6 +5,8 @@ from app import schemas
 from app.api import deps
 from app.crud import crud_article, crud_comment, crud_profile
 
+SLUG_NOT_FOUND = "article with this slug not found"
+
 router = APIRouter()
 
 
@@ -23,7 +25,7 @@ async def create_article_comment(
     if article_db is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="article with this slug not found",
+            detail=SLUG_NOT_FOUND,
         )
     comment_id = await crud_comment.create(
         payload=comment_in, article_id=article_db.id, author_id=current_user.id
@@ -109,7 +111,7 @@ async def delete_comment_for_article(
     if article_db is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="article with this slug not found",
+            detail=SLUG_NOT_FOUND,
         )
     comment_db = await crud_comment.get(comment_id)
     if comment_db is None:

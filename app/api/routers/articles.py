@@ -5,6 +5,10 @@ from app import schemas
 from app.api import deps
 from app.crud import crud_article, crud_profile
 
+SLUG_NOT_FOUND = "article with this slug not found"
+
+AUTHOR_NOT_EXISTED = "This article's author not existed"
+
 router = APIRouter()
 
 
@@ -31,7 +35,7 @@ async def create_article(
     if profile is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This article's author not existed",
+            detail=AUTHOR_NOT_EXISTED,
         )
     tags = await crud_article.get_article_tags(article_id)
     favorited = await crud_article.is_article_favorited_by_user(
@@ -77,7 +81,7 @@ async def feed_articles(
         if profile is None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="This article's author not existed",
+                detail=AUTHOR_NOT_EXISTED,
             )
         tags = await crud_article.get_article_tags(article_db.id)
         if current_user:
@@ -106,21 +110,14 @@ async def feed_articles(
     )
 
 
-@router.get(
-    "/{slug}",
-    name="Get an article",
-    description="Get an article. Auth not required",
-    response_model=schemas.ArticleInResponse,
-)
-async def get_article(
-    slug: str,
-    current_user: schemas.UserDB = Depends(deps.get_current_user(required=False)),
+async def get_article_response_by_slug(
+    slug: str, current_user: schemas.UserDB
 ) -> schemas.ArticleInResponse:
     article = await crud_article.get_article_by_sluq(slug=slug)
     if article is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="article with this slug not found",
+            detail=SLUG_NOT_FOUND,
         )
     profile = await crud_profile.get_profile_by_user_id(
         article.author_id, requested_user=current_user
@@ -128,7 +125,7 @@ async def get_article(
     if profile is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This article's author not existed",
+            detail=AUTHOR_NOT_EXISTED,
         )
     tags = await crud_article.get_article_tags(article.id)
     if current_user:
@@ -152,6 +149,19 @@ async def get_article(
             favoritesCount=favorites_count,
         )
     )
+
+
+@router.get(
+    "/{slug}",
+    name="Get an article",
+    description="Get an article. Auth not required",
+    response_model=schemas.ArticleInResponse,
+)
+async def get_article(
+    slug: str,
+    current_user: schemas.UserDB = Depends(deps.get_current_user(required=False)),
+) -> schemas.ArticleInResponse:
+    return await get_article_response_by_slug(slug=slug, current_user=current_user)
 
 
 @router.put(
@@ -169,46 +179,11 @@ async def update_article(
     if article_db is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="article with this slug not found",
+            detail=SLUG_NOT_FOUND,
         )
     await crud_article.update(article_db, payload=article_in)
 
-    article = await crud_article.get_article_by_sluq(slug=slug)
-    if article is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="article with this slug not found",
-        )
-    profile = await crud_profile.get_profile_by_user_id(
-        article.author_id, requested_user=current_user
-    )
-    if profile is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This article's author not existed",
-        )
-    tags = await crud_article.get_article_tags(article.id)
-    if current_user:
-        favorited = await crud_article.is_article_favorited_by_user(
-            article.id, current_user.id
-        )
-    else:
-        favorited = False
-    favorites_count = await crud_article.count_article_favorites(article.id)
-    return schemas.ArticleInResponse(
-        article=schemas.ArticleForResponse(
-            slug=article.slug,
-            title=article.title,
-            description=article.description,
-            body=article.body,
-            createdAt=article.created_at,
-            updatedAt=article.updated_at,
-            author=profile,
-            tagList=tags,
-            favorited=favorited,
-            favoritesCount=favorites_count,
-        )
-    )
+    return await get_article_response_by_slug(slug=slug, current_user=current_user)
 
 
 @router.delete(
@@ -224,7 +199,7 @@ async def delete_article(
     if article_db is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="article with this slug not found",
+            detail=SLUG_NOT_FOUND,
         )
     if article_db.author_id != current_user.id:
         raise HTTPException(
@@ -303,39 +278,10 @@ async def favorite_article(
     if article is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="article with this slug not found",
+            detail=SLUG_NOT_FOUND,
         )
     await crud_article.favorite(article_id=article.id, user_id=current_user.id)
-    profile = await crud_profile.get_profile_by_user_id(
-        article.author_id, requested_user=current_user
-    )
-    if profile is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This article's author not existed",
-        )
-    tags = await crud_article.get_article_tags(article.id)
-    if current_user:
-        favorited = await crud_article.is_article_favorited_by_user(
-            article.id, current_user.id
-        )
-    else:
-        favorited = False
-    favorites_count = await crud_article.count_article_favorites(article.id)
-    return schemas.ArticleInResponse(
-        article=schemas.ArticleForResponse(
-            slug=article.slug,
-            title=article.title,
-            description=article.description,
-            body=article.body,
-            createdAt=article.created_at,
-            updatedAt=article.updated_at,
-            author=profile,
-            tagList=tags,
-            favorited=favorited,
-            favoritesCount=favorites_count,
-        )
-    )
+    return await get_article_response_by_slug(slug=slug, current_user=current_user)
 
 
 @router.delete(
@@ -352,36 +298,7 @@ async def unfavorite_article(
     if article is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="article with this slug not found",
+            detail=SLUG_NOT_FOUND,
         )
     await crud_article.unfavorite(article_id=article.id, user_id=current_user.id)
-    profile = await crud_profile.get_profile_by_user_id(
-        article.author_id, requested_user=current_user
-    )
-    if profile is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This article's author not existed",
-        )
-    tags = await crud_article.get_article_tags(article.id)
-    if current_user:
-        favorited = await crud_article.is_article_favorited_by_user(
-            article.id, current_user.id
-        )
-    else:
-        favorited = False
-    favorites_count = await crud_article.count_article_favorites(article.id)
-    return schemas.ArticleInResponse(
-        article=schemas.ArticleForResponse(
-            slug=article.slug,
-            title=article.title,
-            description=article.description,
-            body=article.body,
-            createdAt=article.created_at,
-            updatedAt=article.updated_at,
-            author=profile,
-            tagList=tags,
-            favorited=favorited,
-            favoritesCount=favorites_count,
-        )
-    )
+    return await get_article_response_by_slug(slug=slug, current_user=current_user)

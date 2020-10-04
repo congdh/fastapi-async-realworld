@@ -5,6 +5,8 @@ from app import schemas
 from app.api import deps
 from app.crud import crud_profile, crud_user
 
+FOLLOW_SOMETHING_WRONG = "you cannot follow this user because something wrong"
+
 router = APIRouter()
 
 
@@ -59,13 +61,13 @@ async def follow_user(
     if not await crud_profile.follow(follower_user, requested_user):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="you cannot follow this user because something wrong",
+            detail=FOLLOW_SOMETHING_WRONG,
         )
     profile = await crud_profile.get_profile_by_username(username, requested_user)
     if profile is None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="you cannot follow this user because something wrong",
+            detail=FOLLOW_SOMETHING_WRONG,
         )
     return schemas.ProfileResponse(profile=profile)
 
@@ -100,12 +102,12 @@ async def unfollow_user(
     if not await crud_profile.unfollow(follower_user, requested_user):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="you cannot follow this user because something wrong",
+            detail=FOLLOW_SOMETHING_WRONG,
         )
     profile = await crud_profile.get_profile_by_username(username, requested_user)
     if profile is None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="you cannot follow this user because something wrong",
+            detail=FOLLOW_SOMETHING_WRONG,
         )
     return schemas.ProfileResponse(profile=profile)

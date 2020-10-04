@@ -22,7 +22,3 @@ async def get_test_user() -> schemas.UserDB:
         user_id = await crud_user.create(payload=user_in)
         user_row = await crud_user.get(user_id)
     return schemas.UserDB(**user_row)
-
-
-# def get_test_user_token(test_user: models.User) -> str:
-#     return security.create_access_token(test_user.id)
