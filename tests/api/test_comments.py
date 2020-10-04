@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict
+from typing import Tuple
 
 import pytest
 from httpx import AsyncClient
@@ -15,7 +15,7 @@ API_ARTICLES = "/api/articles"
 JWT_TOKEN_PREFIX = "Token"  # noqa: S105
 
 
-async def create_test_article(author: schemas.UserDB) -> Dict:
+async def create_test_article(author: schemas.UserDB) -> Tuple:
     article_in = {
         "title": "How to train your dragon" + datetime.datetime.now().__str__(),
         "description": "Ever wonder how?",

@@ -2,63 +2,78 @@
 
 ## Features
 
-- [x] **Poetry**: Package management
-- [x] **FastAPI**: Modern, fast (high-performance) web framework for building APIs with Python
-- [x] **pytest**: Testing
-- [x] **npx**: Test API using Postman collection
-- [x] **isort**: Code formatting - sort imports
-- [x] **autoflake**: Code formatting - removes unused imports and unused variables
-- [x] **black**: Code formatting - The Uncompromising Code Formatter
-- [x] **flake8**: Code linting - Style enforcement
-- [x] **mypy**: Code linting - Static types
-- [x] **bandit**: Code linting - Security linting
-- [x] **safety**: Code linting - Checks installed dependencies for known security vulnerabilities
-- [x] **Git Pre-commit hooks**: Run checks automatically before git commits
-- [x] **Make**: Leverage muscle memory
-- [x] **Docker, docker-compose**: Packaging and deployment
-- [x] **postgres**: SQL database
-- [x] **Alembic**: Database migration
-- [x] **dbdiagram.io**: Design ER diagrams
+-   [x] **Poetry**: Package management
+-   [x] **FastAPI**: Modern, fast (high-performance) web framework for building APIs with Python
+-   [x] **pytest**: Testing
+-   [x] **npx**: Test API using Postman collection
+-   [x] **isort**: Code formatting - sort imports
+-   [x] **autoflake**: Code formatting - removes unused imports and unused variables
+-   [x] **black**: Code formatting - The Uncompromising Code Formatter
+-   [x] **flake8**: Code linting - Style enforcement
+-   [x] **mypy**: Code linting - Static types
+-   [x] **bandit**: Code linting - Security linting
+-   [x] **safety**: Code linting - Checks installed dependencies for known security vulnerabilities
+-   [x] **Git Pre-commit hooks**: Run checks automatically before git commits
+-   [x] **Make**: Leverage muscle memory
+-   [x] **Docker, docker-compose**: Packaging and deployment
+-   [x] **postgres**: SQL database
+-   [x] **Alembic**: Database migration
+-   [x] **dbdiagram.io**: Design ER diagrams
 
 ## Project setup
+
 ### Dependency management with `Poetry`
+
 ```commandline
 brew install poetry
 poetry init
 poetry install
 poetry shell
 ```
+
 > **_`Knowledge`_**
-> - Manage package dependency and virtual environment using `poetry` => Better than old solution using `virtualenvwrapper` + `pip`
+>
+> -   Manage package dependency and virtual environment using `poetry` => Better than old solution using `virtualenvwrapper` + `pip`
 
 ### First API: FastAPI helloworld
+
 Follow tutorial [FastAPI Bigger Applications - Multiple Files](https://fastapi.tiangolo.com/tutorial/bigger-applications/)
+
 > Skip route `items` because need only simplest API for test configuration and environment
 
 Run & test
+
 ```commandline
 uvicorn app.main:app --reload
 curl localhost:8000/api/users -v
 ```
-Open docs http://127.0.0.1:8000/docs
+
+Open docs <http://127.0.0.1:8000/docs>
 
 > **_`Knowledge`_**
-> - FastAPI Helloworld
+>
+> -   FastAPI Helloworld
 
 ### First testcase: Testing with `pytest` (async)
+
 Follow tutorial [Async Tests](https://fastapi.tiangolo.com/advanced/async-tests/)
 
 > **_`Knowledge`_**
-> - Async testing for FastAPI
+>
+> -   Async testing for FastAPI
 
 ### Code formatting with `black`, `isort`, `autoflake`
+
 Let's install them using `poetry` as development dependencies so they don't clutter a deployment
+
 ```commandline
 poetry add -D --allow-prereleases black
 poetry add -D isort
 poetry add -D autoflake
 ```
+
 Create a setup.cfg file and add this config:
+
 ```ini
 [isort]
 multi_line_output=3
@@ -67,7 +82,9 @@ force_grid_wrap=0
 use_parentheses=True
 line_length=88
 ```
+
 Check code format with black and isort
+
 ```commandline
 poetry run black . --check
 poetry run isort . --diff
@@ -75,6 +92,7 @@ poetry run autoflake -c -r .
 ```
 
 Enforce format for code
+
 ```shell script
 echo "Sort imports one per line, so autoflake can remove unused imports"
 poetry run isort --recursive  --force-single-line-imports --apply app tests
@@ -82,15 +100,21 @@ poetry run autoflake --remove-all-unused-imports --recursive --remove-unused-var
 poetry run black app tests
 poetry run isort --recursive --apply app tests
 ```
+
 > **_`Knowledge`_**
-> - Code formatting with `black`, `isort`, `autoflake`
+>
+> -   Code formatting with `black`, `isort`, `autoflake`
 
 ### Code linting: Style enforcement with `flake8`
+
 Install package
+
 ```commandline
 poetry add -D flake8
 ```
+
 Add this config to setup.cfg:
+
 ```ini
 [flake8]
 ignore = E203, E266, E501, W503
@@ -98,17 +122,24 @@ max-line-length = 88
 max-complexity = 18
 select = B,C,E,F,W,T4
 ```
+
 Now can run `flake8`
+
 ```commandline
 poetry run flake8
 ```
+
 ### Code linting: Static types with mypy
+
 Install package
+
 ```commandline
 poetry add pydantic -E email
 poetry add -D mypy sqlalchemy-stubs
 ```
+
 Add this to setup.cfg
+
 ```ini
 [mypy]
 plugins = pydantic.mypy, sqlmypy
@@ -129,24 +160,29 @@ init_typed = True
 warn_required_dynamic_aliases = True
 warn_untyped_fields = True
 ```
+
 Now can run `mypy`
+
 ```commandline
 poetry run mypy --show-error-codes app
 ```
 
 > **_`Knowledge`_**
-> - Code linting with `flake8`, `mypy`
+>
+> -   Code linting with `flake8`, `mypy`
 
 ### Make to leverage muscle memory
+
 Create Makefile contains below commands
-- poetry
-- clean
-- format
-- lint
-- test
-- default
-- run-dev
-- run
+
+-   poetry
+-   clean
+-   format
+-   lint
+-   test
+-   default
+-   run-dev
+-   run
 
 ```makefile
 .DEFAULT_GOAL = default
@@ -207,45 +243,64 @@ make
 ```
 
 > **_`Knowledge`_**
-> - Make to leverage muscle memory
+>
+> -   Make to leverage muscle memory
 
 ### Code linting: Security linting with `bandit`
+
 Install package
+
 ```commandline
 poetry add -D bandit
 ```
+
 Add this to setup.cfg
+
 ```ini
 [bandit]
 exclude: /tests
 targets: .
 ```
+
 Lets run bandit
+
 ```commandline
 bandit -r --ini setup.cfg
 ```
+
 > **_`Knowledge`_**
-> - Security analysis static source code for python project by `bandit`
+>
+> -   Security analysis static source code for python project by `bandit`
 
 ### Code linting: Checks your installed dependencies for known security vulnerabilitie with `safety`
+
 Install package
+
 ```commandline
 poetry add -D safety
 ```
+
 Lets run safety
+
 ```commandline
 safety check
 ```
+
 > **_`Knowledge`_**
-> - Check vulnerability dependencies
+>
+> -   Check vulnerability dependencies
 
 ### Git Pre-commit hooks: Run checks automatically before git commits
+
 Install package
+
 ```commandline
 poetry add -D pre-commit
 pre-commit install
 ```
+
 Create file `.pre-commit-config.yaml` with content
+
 ```yaml
 repos:
   - repo: https://github.com/myint/autoflake
@@ -304,20 +359,26 @@ repos:
       - id: detect-private-key
       - id: mixed-line-ending
 ```
+
 Test with command
+
 ```commandline
 poetry run pre-commit run --all-file
 ```
 
 > **_`Knowledge`_**
-> - Run checks automatically before git commits
+>
+> -   Run checks automatically before git commits
 
 ### Deployment with docker
+
 #### Dockerfile
+
 Follow tutorial [FastAPI Deployment](https://fastapi.tiangolo.com/deployment/).
 
 Then, install install packages with poetry in Dockerfile using example [Using Poetry](https://github.com/tiangolo/uvicorn-gunicorn-fastapi-docker#using-poetry)
 Dockerfile
+
 ```dockerfile
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
 
@@ -335,19 +396,26 @@ RUN poetry install --no-root --no-dev
 
 COPY ./app /app/app
 ```
+
 Build image and run container
+
 ```commandline
 docker build -t myimage .
 docker run -d --name mycontainer -p 80:80 myimage
 ```
+
 Test
+
 ```shell script
 curl localhost:80/api/users | jq
 ```
-Open docs http://127.0.0.1:80/docs
+
+Open docs <http://127.0.0.1:80/docs>
 
 #### Docker compose
+
 Create `docker-compose.yml`
+
 ```yaml
 version: "3.8"
 
@@ -357,18 +425,24 @@ services:
     ports:
       - 80:80
 ```
+
 Lets run
+
 ```commandline
 docker-compose up
 ```
+
 And test
 Test
+
 ```shell script
 curl localhost:80/api/users | jq
 ```
 
 ## Database setup
+
 Add postgres service into `docker-compose.yml`
+
 ```yaml
 version: "3.8"
 
@@ -389,16 +463,20 @@ services:
 volumes:
   app-db-data:
 ```
+
 and start it
+
 ```commandline
 docker-compose up db
 ```
 
 ## Postgres asynchronously
+
 > Reference:
-> - [Developing and Testing an Asynchronous API with FastAPI and Pytest](https://testdriven.io/blog/fastapi-crud/)
-> - [Async SQL (Relational) Databases with FastAPI](https://fastapi.tiangolo.com/advanced/async-sql-databases/)
-> - [Using database with Starlette](https://www.starlette.io/database/)
+>
+> -   [Developing and Testing an Asynchronous API with FastAPI and Pytest](https://testdriven.io/blog/fastapi-crud/)
+> -   [Async SQL (Relational) Databases with FastAPI](https://fastapi.tiangolo.com/advanced/async-sql-databases/)
+> -   [Using database with Starlette](https://www.starlette.io/database/)
 
 ```commandline
 poetry add asyncpg psycopg2-binary databases
@@ -408,57 +486,67 @@ poetry add -D Faker
 ```
 
 Notable package/class
-- **`db.py`** SQLAlchemy parts: Declare, configure database
-- **`schemas`** Pydantic models. Read, write data interface with API
-- **`crud`** CRUD utils, which have reusable functions to interact with the data in the database
-- **`core`** Core utils, which have function/variable to run app like config, secuirty ...
-- **api/deps.py** Dependency variable which used in API function
 
+-   **`db.py`** SQLAlchemy parts: Declare, configure database
+-   **`schemas`** Pydantic models. Read, write data interface with API
+-   **`crud`** CRUD utils, which have reusable functions to interact with the data in the database
+-   **`core`** Core utils, which have function/variable to run app like config, secuirty ...
+-   **api/deps.py** Dependency variable which used in API function
 
 Difference between Asynchronous and Synchronous with SQL database
 
-| | Asynchronous | Synchronous |
-|----------|-------------|------|
-| Database models |  sqlalchemy.Table | sqlalchemy.ext.declarative.as_declarative |
-| Connect and disconnect | event handlers (startup & shutdown) | Don't care |
-| ORM | Not support | Support |
-| CRUD | databases.Database | sqlalchemy.orm.Session |
-| Test | database.connect() before & database.disconnect() after | Don't care |
+|                        | Asynchronous                                            | Synchronous                               |
+| ---------------------- | ------------------------------------------------------- | ----------------------------------------- |
+| Database models        | sqlalchemy.Table                                        | sqlalchemy.ext.declarative.as_declarative |
+| Connect and disconnect | event handlers (startup & shutdown)                     | Don't care                                |
+| ORM                    | Not support                                             | Support                                   |
+| CRUD                   | databases.Database                                      | sqlalchemy.orm.Session                    |
+| Test                   | database.connect() before & database.disconnect() after | Don't care                                |
 
 > **_Note_**: This comparison only apply for [encode/databases](https://github.com/encode/databases) library
 
 > **_`Knowledge`_**
-> - Async SQL database with `encode/databases`
+>
+> -   Async SQL database with `encode/databases`
 
 ## Test API using Postman collection with npx
+
 Beside pytest, you can test api using Postman collection with npx (npm package executor). The postman collection and script file is stored in `postman` directory. Read more details [here](postman/README.md)
+
 ```bash
 cd postman
 APIURL=http://localhost:8000/api bash ./run-api-tests.sh
 ```
 
 > **_`Knowledge`_**
-> - Test API using Postman collection with npx
+>
+> -   Test API using Postman collection with npx
 
 ## Database migration with Alembic
+
 > Reference: [Database migrations](https://www.starlette.io/database/#migrations)
 
 Add alembic package using poetry
+
 ```commandline
 poetry add alembic
 ```
 
 Init alembic
+
 ```commandline
 alembic init alembic
 ```
 
 that will create config file `alembic.ini` and directory `alembic`
 In alembic.ini remove the following line:
+
 ```ini
 sqlalchemy.url = driver://user:pass@localhost/dbname
 ```
+
 In migrations/env.py, you need to set the 'sqlalchemy.url' configuration key, and the target_metadata variable
+
 ```python
 # The Alembic Config object.
 config = context.config
@@ -470,11 +558,15 @@ target_metadata = app.metadata
 
 ...
 ```
+
 Then, create an initial revision:
+
 ```shell script
 alembic revision --autogenerate -m "Create users table"
 ```
+
 Running our first migration
+
 ```shell script
 $ alembic upgrade head
 INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
@@ -483,12 +575,15 @@ INFO  [alembic.runtime.migration] Running upgrade  -> 8ebc5ea3592e, Create users
 ```
 
 ## Test isolation
+
 Install `sqlalchemy-utils` package
+
 ```shell script
  poetry add -D sqlalchemy-utils
 ```
 
 In config file _`app/core/config.py`_, add `TESTING` config and route to test database when `TESTING` is set
+
 ```python
 class Settings(BaseSettings):
     TESTING: bool = False
@@ -517,6 +612,7 @@ class Settings(BaseSettings):
 ```
 
 Then prepare test database before run testcase
+
 ```python
 @pytest.fixture(scope="session", autouse=True)
 def create_test_database():
@@ -533,7 +629,9 @@ def create_test_database():
     yield  # Run the tests.
     drop_database(url)  # Drop the test database.
 ```
+
 Note that you **_MUST_** set `TESTING` environment variable before import app package
+
 ```python
 environ["TESTING"] = "True"
 
@@ -542,8 +640,9 @@ from app import schemas  # noqa: E402
 ```
 
 > **_`Knowledge`_**
-> - Test isolation database
-> - Using alembic in code
+>
+> -   Test isolation database
+> -   Using alembic in code
 
 ## Profiles API
 
@@ -565,7 +664,8 @@ alembic revision --autogenerate -m "Create followers_assoc table"
 Create schema, crud, api route and testcase for Profile API
 
 > **_`Knowledge`_**
-> - Using Callable with Depends
+>
+> -   Using Callable with Depends
 
 ## Tags API
 
@@ -592,6 +692,7 @@ Install slugify package
 ```shell script
 poetry add python-slugify
 ```
+
 Design database diagram using [dbdiagram.io](https://dbdiagram.io)
 
 ```
@@ -726,4 +827,5 @@ alembic revision --autogenerate -m "Create articles, comments table"
 Create crud, api route and testcase for Articles API
 
 > **_`Knowledge`_**
-> - Design ER diagrams using dbdiagram.io => Simple, Painlessly
+>
+> -   Design ER diagrams using dbdiagram.io => Simple, Painlessly
