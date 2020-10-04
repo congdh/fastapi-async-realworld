@@ -16,8 +16,8 @@ async def create(
     return comment_id
 
 
-async def get(id: int) -> Optional[schemas.CommentDB]:
-    query = db.comments.select().where(id == db.comments.c.id)
+async def get(comment_id: int) -> Optional[schemas.CommentDB]:
+    query = db.comments.select().where(comment_id == db.comments.c.id)
     comment_row = await database.fetch_one(query=query)
     if comment_row:
         return schemas.CommentDB(**comment_row)

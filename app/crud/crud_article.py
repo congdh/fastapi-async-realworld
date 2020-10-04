@@ -54,8 +54,8 @@ async def create(payload: schemas.ArticleInCreate, author_id: int) -> int:
     return article_id
 
 
-async def get(id: int) -> Optional[schemas.ArticleDB]:
-    query = db.articles.select().where(id == db.articles.c.id)
+async def get(article_id: int) -> Optional[schemas.ArticleDB]:
+    query = db.articles.select().where(article_id == db.articles.c.id)
     article_row = await database.fetch_one(query=query)
     if article_row:
         return schemas.ArticleDB(**article_row)

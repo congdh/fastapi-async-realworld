@@ -24,7 +24,7 @@ async def get_profile_by_user_id(
     user_id: int,
     requested_user: Optional[schemas.UserDB] = None,
 ) -> Optional[schemas.Profile]:
-    user_row = await crud_user.get(id=user_id)
+    user_row = await crud_user.get(user_id=user_id)
     if user_row is None:
         return None
     user = schemas.UserDB(**user_row)  # type: ignore

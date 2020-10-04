@@ -16,8 +16,8 @@ async def create(payload: schemas.UserCreate) -> Optional[int]:
     return await database.execute(query=query)
 
 
-async def get(id: int) -> Optional[Mapping[str, Any]]:
-    query = db.users.select().where(id == db.users.c.id)
+async def get(user_id: int) -> Optional[Mapping[str, Any]]:
+    query = db.users.select().where(user_id == db.users.c.id)
     return await database.fetch_one(query=query)
 
 
