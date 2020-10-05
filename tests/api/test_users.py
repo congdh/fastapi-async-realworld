@@ -36,16 +36,17 @@ async def test_register_success(async_client: AsyncClient):
     assert "bio" in user_with_token
 
 
-async def test_register_failure_by_existed_user(async_client: AsyncClient):
-    password = "password"
-    faker = Faker()
-    profile = faker.profile()
-    email = profile.get("mail", None)
-    username = profile.get("username", None)
-    user_in = {"user": {"email": email, "password": password, "username": username}}
-    r = await async_client.post(API_AUTHENTICATION, json=user_in)
-    assert r.status_code == status.HTTP_200_OK
-
+async def test_register_failure_by_existed_user(
+    async_client: AsyncClient,
+    test_user: schemas.UserDB,
+):
+    user_in = {
+        "user": {
+            "email": test_user.email,
+            "password": f"{TEST_USER_PASSWORD}xxx",
+            "username": test_user.username,
+        }
+    }
     r = await async_client.post(API_AUTHENTICATION, json=user_in)
     user_response = r.json()
     assert r.status_code == status.HTTP_400_BAD_REQUEST
@@ -78,22 +79,21 @@ async def test_user_login_failure_incorrect_password(
     assert user_response["detail"] == "Incorrect email or password"
 
 
-async def test_user_login_success(async_client: AsyncClient, test_user):
+def assert_user_response(expected: schemas.UserDB, actual: schemas.UserResponse):
+    user_with_token = actual.user
+    assert user_with_token.email == expected.email
+    assert user_with_token.username == expected.username
+    assert user_with_token.bio == expected.bio
+    assert user_with_token.image == expected.image
+    assert user_with_token.token
+
+
+async def test_user_login_success(async_client: AsyncClient, test_user: schemas.UserDB):
     login_data = {"user": {"email": test_user.email, "password": TEST_USER_PASSWORD}}
     r = await async_client.post(f"{API_AUTHENTICATION}/login", json=login_data)
     assert r.status_code == status.HTTP_200_OK
-    user_response = r.json()
-    assert r.status_code == status.HTTP_200_OK
-    assert "user" in user_response
-    user_with_token = user_response.get("user")
-    assert isinstance(user_with_token, Dict)
-    assert "email" in user_with_token
-    assert user_with_token["email"] == test_user.email
-    assert "username" in user_with_token
-    assert user_with_token["username"] == test_user.username
-    assert "token" in user_with_token
-    assert "bio" in user_with_token
-    assert "image" in user_with_token
+    user_response = schemas.UserResponse(**r.json())
+    assert_user_response(expected=test_user, actual=user_response)
 
 
 async def test_retrieve_current_user_without_token(async_client: AsyncClient):
@@ -127,18 +127,8 @@ async def test_retrieve_current_success(
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
     r = await async_client.get(API_USERS, headers=headers)
     assert r.status_code == status.HTTP_200_OK
-    user_response = r.json()
-    assert r.status_code == status.HTTP_200_OK
-    assert "user" in user_response
-    user_with_token = user_response.get("user")
-    assert isinstance(user_with_token, Dict)
-    assert "email" in user_with_token
-    assert user_with_token["email"] == test_user.email
-    assert "username" in user_with_token
-    assert user_with_token["username"] == test_user.username
-    assert "token" in user_with_token
-    assert "bio" in user_with_token
-    assert "image" in user_with_token
+    user_response = schemas.UserResponse(**r.json())
+    assert_user_response(expected=test_user, actual=user_response)
 
 
 async def test_update_current_user_with_new_username(
@@ -160,7 +150,6 @@ async def test_update_current_user_with_new_email(
     r = await async_client.put(API_USERS, json=user_update, headers=headers)
     assert r.status_code == status.HTTP_200_OK
     user_response = r.json()
-    assert r.status_code == status.HTTP_200_OK
     assert "user" in user_response
     user_with_token = user_response.get("user")
     assert isinstance(user_with_token, Dict)

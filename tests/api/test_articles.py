@@ -66,19 +66,8 @@ async def test_get_article_not_exited(async_client: AsyncClient):
     assert r.status_code == status.HTTP_400_BAD_REQUEST
 
 
-async def test_get_article(
-    async_client: AsyncClient, test_user: schemas.UserDB, token: str
-):
-    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
-    article_in = {
-        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
-        "description": "Ever wonder how?",
-        "body": "You have to believe",
-        "tagList": ["reactjs", "angularjs", "dragons"],
-    }
-    r = await async_client.post(
-        f"{API_ARTICLES}", json={"article": article_in}, headers=headers
-    )
+async def test_get_article(async_client: AsyncClient, test_user: schemas.UserDB):
+    article_in, _article_id = await create_test_article(test_user)
 
     slug = slugify(article_in.get("title"))
     r = await async_client.get(f"{API_ARTICLES}/{slug}")
@@ -91,15 +80,7 @@ async def test_update_article(
     async_client: AsyncClient, test_user: schemas.UserDB, token: str
 ):
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
-    article_in = {
-        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
-        "description": "Ever wonder how?",
-        "body": "You have to believe",
-        "tagList": ["reactjs", "angularjs", "dragons"],
-    }
-    r = await async_client.post(
-        f"{API_ARTICLES}", json={"article": article_in}, headers=headers
-    )
+    article_in, _article_id = await create_test_article(test_user)
     slug = slugify(article_in.get("title"))
 
     updated_data = {"body": "With two hands"}
@@ -140,15 +121,7 @@ async def test_delete_article(
     async_client: AsyncClient, test_user: schemas.UserDB, token: str
 ):
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
-    article_in = {
-        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
-        "description": "Ever wonder how?",
-        "body": "You have to believe",
-        "tagList": ["reactjs", "angularjs", "dragons"],
-    }
-    r = await async_client.post(
-        f"{API_ARTICLES}", json={"article": article_in}, headers=headers
-    )
+    article_in, _article_id = await create_test_article(test_user)
     slug = slugify(article_in.get("title"))
 
     r = await async_client.delete(f"{API_ARTICLES}/{slug}", headers=headers)
@@ -209,14 +182,7 @@ async def test_feed_articles(
     other_user: schemas.UserDB,
 ):
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
-    article_in = {
-        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
-        "description": "Ever wonder how?",
-        "body": "You have to believe",
-        "tagList": ["reactjs", "angularjs", "dragons"],
-    }
-    article_in_create = schemas.ArticleInCreate(**article_in)
-    await crud_article.create(article_in_create, other_user.id)
+    article_in, _article_id = await create_test_article(other_user)
     await crud_profile.follow(other_user, test_user)
 
     r = await async_client.get(f"{API_ARTICLES}/feed", headers=headers)
@@ -236,14 +202,7 @@ async def test_favorite_article(
     token: str,
     other_user: schemas.UserDB,
 ):
-    article_in = {
-        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
-        "description": "Ever wonder how?",
-        "body": "You have to believe",
-        "tagList": ["reactjs", "angularjs", "dragons"],
-    }
-    article_in_create = schemas.ArticleInCreate(**article_in)
-    await crud_article.create(article_in_create, other_user.id)
+    article_in, _article_id = await create_test_article(other_user)
 
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
     slug = slugify(article_in.get("title"))

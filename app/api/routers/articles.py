@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Body, Depends, HTTPException
 from starlette import status
 
@@ -42,19 +44,12 @@ async def create_article(
         article_id, current_user.id
     )
     favorites_count = await crud_article.count_article_favorites(article_id)
-    return schemas.ArticleInResponse(
-        article=schemas.ArticleForResponse(
-            slug=article.slug,
-            title=article.title,
-            description=article.description,
-            body=article.body,
-            createdAt=article.created_at,
-            updatedAt=article.updated_at,
-            author=profile,
-            tagList=tags,
-            favorited=favorited,
-            favoritesCount=favorites_count,
-        )
+    return gen_article_in_response(
+        article=article,
+        favorited=favorited,
+        favorites_count=favorites_count,
+        profile=profile,
+        tags=tags,
     )
 
 
@@ -135,6 +130,22 @@ async def get_article_response_by_slug(
     else:
         favorited = False
     favorites_count = await crud_article.count_article_favorites(article.id)
+    return gen_article_in_response(
+        article=article,
+        favorited=favorited,
+        favorites_count=favorites_count,
+        profile=profile,
+        tags=tags,
+    )
+
+
+def gen_article_in_response(
+    article: schemas.ArticleDB,
+    favorited: bool,
+    favorites_count: int,
+    profile: schemas.Profile,
+    tags: List[str],
+) -> schemas.ArticleInResponse:
     return schemas.ArticleInResponse(
         article=schemas.ArticleForResponse(
             slug=article.slug,

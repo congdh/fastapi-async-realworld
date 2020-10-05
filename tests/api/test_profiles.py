@@ -10,6 +10,15 @@ API_PROFILES = "/api/profiles"
 JWT_TOKEN_PREFIX = "Token"  # noqa: S105
 
 
+def assert_profile_with_user(
+    expected: schemas.UserDB,
+    actual: schemas.Profile,
+) -> None:
+    assert actual.username == expected.username
+    assert actual.bio == expected.bio
+    assert actual.image == expected.image
+
+
 async def test_get_profile_without_authorized(
     async_client: AsyncClient, test_user: schemas.UserDB
 ):
@@ -17,9 +26,7 @@ async def test_get_profile_without_authorized(
     assert r.status_code == status.HTTP_200_OK
     profile_response = schemas.ProfileResponse(**r.json())
     profile = profile_response.profile
-    assert profile.username == test_user.username
-    assert profile.bio == test_user.bio
-    assert profile.image == test_user.image
+    assert_profile_with_user(profile, test_user)
 
 
 async def test_get_profile_with_authorized(
@@ -30,9 +37,7 @@ async def test_get_profile_with_authorized(
     assert r.status_code == status.HTTP_200_OK
     profile_response = schemas.ProfileResponse(**r.json())
     profile = profile_response.profile
-    assert profile.username == test_user.username
-    assert profile.bio == test_user.bio
-    assert profile.image == test_user.image
+    assert_profile_with_user(profile, test_user)
     assert not profile.following
 
 
@@ -49,9 +54,7 @@ async def test_get_profile_with_following(
     assert r.status_code == status.HTTP_200_OK
     profile_response = schemas.ProfileResponse(**r.json())
     profile = profile_response.profile
-    assert profile.username == other_user.username
-    assert profile.bio == other_user.bio
-    assert profile.image == other_user.image
+    assert_profile_with_user(profile, other_user)
     assert profile.following
 
 
@@ -115,9 +118,7 @@ async def test_follow_user(
     assert r.status_code == status.HTTP_200_OK
     profile_response = schemas.ProfileResponse(**r.json())
     profile = profile_response.profile
-    assert profile.username == other_user.username
-    assert profile.bio == other_user.bio
-    assert profile.image == other_user.image
+    assert_profile_with_user(profile, other_user)
     assert profile.following
 
 
@@ -181,7 +182,5 @@ async def test_unfollow_user(
     assert r.status_code == status.HTTP_200_OK
     profile_response = schemas.ProfileResponse(**r.json())
     profile = profile_response.profile
-    assert profile.username == other_user.username
-    assert profile.bio == other_user.bio
-    assert profile.image == other_user.image
+    assert_profile_with_user(profile, other_user)
     assert not profile.following
