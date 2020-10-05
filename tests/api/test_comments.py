@@ -1,30 +1,16 @@
-import datetime
-from typing import Tuple
-
 import pytest
 from httpx import AsyncClient
 from slugify import slugify
 from starlette import status
 
 from app import schemas
-from app.crud import crud_article, crud_comment
+from app.crud import crud_comment
+from tests.utils.article import create_test_article
 
 pytestmark = pytest.mark.asyncio
 
 API_ARTICLES = "/api/articles"
 JWT_TOKEN_PREFIX = "Token"  # noqa: S105
-
-
-async def create_test_article(author: schemas.UserDB) -> Tuple:
-    article_in = {
-        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
-        "description": "Ever wonder how?",
-        "body": "You have to believe",
-        "tagList": ["reactjs", "angularjs", "dragons"],
-    }
-    article_in_create = schemas.ArticleInCreate(**article_in)
-    article_id = await crud_article.create(article_in_create, author.id)
-    return article_in, article_id
 
 
 async def test_add_comments_to_an_article(
@@ -33,7 +19,7 @@ async def test_add_comments_to_an_article(
     token: str,
     other_user: schemas.UserDB,
 ):
-    article_in, article_id = await create_test_article(other_user)
+    article_in, _article_id = await create_test_article(other_user)
 
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
     slug = slugify(article_in.get("title"))

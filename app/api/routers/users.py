@@ -55,7 +55,7 @@ async def update_current_user(
                 status_code=HTTP_400_BAD_REQUEST,
                 detail="user with this email already exists",
             )
-    user_id = await crud_user.update(id=current_user.id, payload=user_update)
+    user_id = await crud_user.update(user_id=current_user.id, payload=user_update)
     if user_id != current_user.id:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,

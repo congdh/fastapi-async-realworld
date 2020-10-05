@@ -31,11 +31,11 @@ async def get_user_by_username(username: str) -> Optional[Mapping[str, Any]]:
     return await database.fetch_one(query=query)
 
 
-async def update(id: int, payload: schemas.UserUpdate) -> int:
+async def update(user_id: int, payload: schemas.UserUpdate) -> int:
     update_data = payload.dict(exclude_unset=True)
     query = (
         db.users.update()
-        .where(id == db.users.c.id)
+        .where(user_id == db.users.c.id)
         .values(update_data)
         .returning(db.users.c.id)
     )

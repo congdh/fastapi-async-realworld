@@ -8,6 +8,7 @@ from starlette import status
 
 from app import schemas
 from app.crud import crud_article, crud_profile
+from tests.utils.article import create_test_article
 
 pytestmark = pytest.mark.asyncio
 
@@ -267,14 +268,7 @@ async def test_unfavorite_article(
     token: str,
     other_user: schemas.UserDB,
 ):
-    article_in = {
-        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
-        "description": "Ever wonder how?",
-        "body": "You have to believe",
-        "tagList": ["reactjs", "angularjs", "dragons"],
-    }
-    article_in_create = schemas.ArticleInCreate(**article_in)
-    article_id = await crud_article.create(article_in_create, other_user.id)
+    article_in, article_id = await create_test_article(other_user)
     await crud_article.favorite(article_id=article_id, user_id=test_user.id)
 
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
