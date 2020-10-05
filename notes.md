@@ -695,7 +695,7 @@ poetry add python-slugify
 
 Design database diagram using [dbdiagram.io](https://dbdiagram.io)
 
-```
+```dbml
 Table users as U {
   id int [pk, increment] // auto-increment
   email varchar
