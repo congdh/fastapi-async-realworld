@@ -1,5 +1,5 @@
-import uvicorn  # type: ignore
 from fastapi import FastAPI
+from loguru import logger
 
 from app.api import api
 from app.db import database
@@ -11,13 +11,11 @@ app.include_router(api.api_router, prefix="/api")
 
 @app.on_event("startup")
 async def startup() -> None:
+    logger.info("Connect to database")
     await database.connect()
 
 
 @app.on_event("shutdown")
 async def shutdown() -> None:
+    logger.info("Disconnect to database")
     await database.disconnect()
-
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)

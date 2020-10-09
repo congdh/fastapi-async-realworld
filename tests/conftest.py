@@ -4,6 +4,7 @@ from os import environ
 from typing import AsyncGenerator
 
 import pytest
+from asgi_lifespan import LifespanManager
 from httpx import AsyncClient
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
@@ -15,7 +16,6 @@ environ["TESTING"] = "True"
 from app import schemas  # noqa: E402
 from app.core import security  # noqa: E402
 from app.core.config import settings  # noqa: E402
-from app.db import database  # noqa: E402
 from app.main import app  # noqa: E402
 from tests.utils.user import get_test_user  # noqa: E402
 
@@ -45,10 +45,9 @@ def create_test_database():
 
 @pytest.fixture()
 async def async_client() -> AsyncGenerator[AsyncClient, None]:
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        await database.connect()
-        yield ac
-        await database.disconnect()
+    async with LifespanManager(app):
+        async with AsyncClient(app=app, base_url="http://test") as ac:
+            yield ac
 
 
 @pytest.fixture

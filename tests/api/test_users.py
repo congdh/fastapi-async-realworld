@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from starlette import status
 
 from app import schemas
-from tests.utils.user import TEST_USER_PASSWORD
+from tests.utils.user import TEST_USER_PASSWORD, delete_user
 
 pytestmark = pytest.mark.asyncio
 
@@ -121,7 +121,19 @@ async def test_retrieve_current_user_wrong_token(async_client: AsyncClient):
     assert r.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-async def test_retrieve_current_success(
+async def test_retrieve_current_user_but_not_found(
+    async_client: AsyncClient, test_user: schemas.UserDB, token: str
+):
+    await delete_user(test_user)
+    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    r = await async_client.get(API_USERS, headers=headers)
+    assert r.status_code == status.HTTP_404_NOT_FOUND
+    user_response = r.json()
+    assert "detail" in user_response
+    assert user_response["detail"] == "User not found"
+
+
+async def test_retrieve_current_user_success(
     async_client: AsyncClient, test_user: schemas.UserDB, token: str
 ):
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}

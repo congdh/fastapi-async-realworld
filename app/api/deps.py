@@ -11,7 +11,7 @@ from app.crud import crud_user
 JWT_TOKEN_PREFIX = "Token"  # noqa: S105
 
 
-def authrization_heder_token_required(
+def authorization_heder_token_required(
     api_key: str = Depends(APIKeyHeader(name="Authorization")),
 ) -> str:
     try:
@@ -29,7 +29,7 @@ def authrization_heder_token_required(
     return token
 
 
-def authrization_heder_token_optional(
+def authorization_heder_token_optional(
     api_key: str = Depends(APIKeyHeader(name="Authorization", auto_error=False)),
 ) -> Optional[str]:
     if api_key is None:
@@ -43,16 +43,16 @@ def authrization_heder_token_optional(
     return token
 
 
-def authrization_heder_token(required: bool = True) -> Callable:  # type: ignore
+def authorization_heder_token(required: bool = True) -> Callable:  # type: ignore
     return (
-        authrization_heder_token_required
+        authorization_heder_token_required
         if required
-        else authrization_heder_token_optional
+        else authorization_heder_token_optional
     )
 
 
 async def get_current_user_required(
-    token: str = Depends(authrization_heder_token()),
+    token: str = Depends(authorization_heder_token()),
 ) -> schemas.UserDB:
     user_id = security.get_user_id_from_token(token=token)
     user_row = await crud_user.get(int(user_id))
@@ -62,7 +62,7 @@ async def get_current_user_required(
 
 
 async def get_current_user_required_optional(
-    token: str = Depends(authrization_heder_token(required=False)),
+    token: str = Depends(authorization_heder_token(required=False)),
 ) -> Optional[schemas.UserDB]:
     if token is None:
         return None
