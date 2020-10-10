@@ -140,14 +140,14 @@ async def get_all(
         )  # type: ignore
         query = query.where(db.tag_assoc.c.tag == tag)
     if author:
-        user_row = await crud_user.get_user_by_username(username=author)
-        if user_row:
-            author_id = dict(user_row).get("id")
+        user_db = await crud_user.get_user_by_username(username=author)
+        if user_db:
+            author_id = user_db.id
             query = query.where(author_id == db.articles.c.author_id)
     if favorited:
-        user_row = await crud_user.get_user_by_username(username=favorited)
-        if user_row:
-            favorited_id = dict(user_row).get("id")
+        user_db = await crud_user.get_user_by_username(username=favorited)
+        if user_db:
+            favorited_id = user_db.id
             need_join = True
             j = j.join(
                 db.favoriter_assoc, db.articles.c.id == db.favoriter_assoc.c.article_id

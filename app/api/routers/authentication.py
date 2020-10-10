@@ -16,8 +16,8 @@ router = APIRouter()
 async def register(
     user_in: schemas.UserCreate = Body(..., embed=True, alias="user"),
 ) -> schemas.UserResponse:
-    user = await crud_user.get_user_by_email(email=user_in.email)
-    if user:
+    user_db = await crud_user.get_user_by_email(email=user_in.email)
+    if user_db:
         raise HTTPException(
             status_code=400,
             detail="The user with this username already exists in the system.",

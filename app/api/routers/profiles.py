@@ -62,13 +62,12 @@ async def follow_user(
 async def get_follow_user(
     username: str, requested_user: schemas.UserDB
 ) -> schemas.UserDB:
-    user_row = await crud_user.get_user_by_username(username=username)
-    if user_row is None:
+    follower_user = await crud_user.get_user_by_username(username=username)
+    if follower_user is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="user with this username is not existed",
         )
-    follower_user = schemas.UserDB(**user_row)
     if follower_user.id == requested_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -87,13 +86,12 @@ async def unfollow_user(
     username: str,
     requested_user: schemas.UserDB = Depends(deps.get_current_user()),
 ) -> schemas.ProfileResponse:
-    user_row = await crud_user.get_user_by_username(username=username)
-    if user_row is None:
+    follower_user = await crud_user.get_user_by_username(username=username)
+    if follower_user is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="user with this username is not existed",
         )
-    follower_user = schemas.UserDB(**user_row)
     if follower_user.id == requested_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

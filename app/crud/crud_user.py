@@ -1,4 +1,4 @@
-from typing import Any, Mapping, Optional
+from typing import Optional
 
 from pydantic import SecretStr
 
@@ -16,19 +16,22 @@ async def create(payload: schemas.UserCreate) -> Optional[int]:
     return await database.execute(query=query)
 
 
-async def get(user_id: int) -> Optional[Mapping[str, Any]]:
+async def get(user_id: int) -> Optional[schemas.UserDB]:
     query = db.users.select().where(user_id == db.users.c.id)
-    return await database.fetch_one(query=query)
+    user_row = await database.fetch_one(query=query)
+    return schemas.UserDB(**user_row) if user_row else None
 
 
-async def get_user_by_email(email: str) -> Optional[Mapping[str, Any]]:
+async def get_user_by_email(email: str) -> Optional[schemas.UserDB]:
     query = db.users.select().where(email == db.users.c.email)
-    return await database.fetch_one(query=query)
+    user_row = await database.fetch_one(query=query)
+    return schemas.UserDB(**user_row) if user_row else None
 
 
-async def get_user_by_username(username: str) -> Optional[Mapping[str, Any]]:
+async def get_user_by_username(username: str) -> Optional[schemas.UserDB]:
     query = db.users.select().where(username == db.users.c.username)
-    return await database.fetch_one(query=query)
+    user_row = await database.fetch_one(query=query)
+    return schemas.UserDB(**user_row) if user_row else None
 
 
 async def update(user_id: int, payload: schemas.UserUpdate) -> int:
@@ -43,10 +46,9 @@ async def update(user_id: int, payload: schemas.UserUpdate) -> int:
 
 
 async def authenticate(email: str, password: SecretStr) -> Optional[schemas.UserDB]:
-    user_row = await get_user_by_email(email=email)
-    if not user_row:
+    user_db = await get_user_by_email(email=email)
+    if not user_db:
         return None
-    user = schemas.UserDB(**user_row)
-    if not verify_password(password, user.hashed_password):
+    if not verify_password(password, user_db.hashed_password):
         return None
-    return user
+    return user_db

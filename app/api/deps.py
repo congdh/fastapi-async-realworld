@@ -55,10 +55,10 @@ async def get_current_user_required(
     token: str = Depends(authorization_heder_token()),
 ) -> schemas.UserDB:
     user_id = security.get_user_id_from_token(token=token)
-    user_row = await crud_user.get(int(user_id))
-    if not user_row:
+    user_db = await crud_user.get(int(user_id))
+    if not user_db:
         raise HTTPException(status_code=404, detail="User not found")
-    return schemas.UserDB(**user_row)
+    return user_db
 
 
 async def get_current_user_required_optional(
@@ -67,10 +67,7 @@ async def get_current_user_required_optional(
     if token is None:
         return None
     user_id = security.get_user_id_from_token(token=token)
-    user_row = await crud_user.get(int(user_id))
-    if not user_row:
-        return None
-    return schemas.UserDB(**user_row)
+    return await crud_user.get(int(user_id))
 
 
 def get_current_user(required: bool = True) -> Callable:  # type: ignore

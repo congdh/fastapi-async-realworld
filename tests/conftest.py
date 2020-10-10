@@ -37,6 +37,7 @@ def create_test_database():
 
     config = Config(ini_file)  # Run the migrations.
     config.set_main_option("script_location", alembic_directory)
+    command.downgrade(config, "base")
     command.upgrade(config, "head")
     yield  # Run the tests.
     if DROP_DATABASE_AFTER_TEST:
