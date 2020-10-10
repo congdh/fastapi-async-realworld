@@ -1,5 +1,4 @@
 import datetime
-from typing import Dict
 
 import pytest
 from httpx import AsyncClient
@@ -8,7 +7,7 @@ from starlette import status
 
 from app import schemas
 from app.crud import crud_article, crud_profile
-from tests.utils.article import create_test_article
+from tests.utils.article import assert_article_in_response, create_test_article
 
 pytestmark = pytest.mark.asyncio
 
@@ -43,21 +42,6 @@ async def test_create_articles(
     assert r.status_code == status.HTTP_200_OK
     article = schemas.ArticleInResponse(**r.json()).article
     assert_article_in_response(article_in, article, test_user)
-
-
-def assert_article_in_response(
-    expected: Dict, actual: schemas.ArticleInResponse, author: schemas.UserDB
-) -> None:
-    assert actual.title == expected.get("title")
-    assert actual.description == expected.get("description")
-    assert actual.body == expected.get("body")
-    assert actual.author.username == author.username
-    assert hasattr(actual, "tagList")
-    assert actual.tagList == expected.get("tagList")
-    assert hasattr(actual, "favorited")
-    assert not actual.favorited
-    assert hasattr(actual, "favoritesCount")
-    assert actual.favoritesCount == 0
 
 
 async def test_get_article_not_exited(async_client: AsyncClient):

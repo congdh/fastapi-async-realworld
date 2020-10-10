@@ -15,7 +15,7 @@ API_USERS = "/api/user"
 JWT_TOKEN_PREFIX = "Token"  # noqa: S105
 
 
-async def test_register_success(async_client: AsyncClient):
+async def test_register_success(async_client: AsyncClient) -> None:
     password = "password"
     faker = Faker()
     profile = faker.profile()
@@ -39,7 +39,7 @@ async def test_register_success(async_client: AsyncClient):
 async def test_register_failure_by_existed_user(
     async_client: AsyncClient,
     test_user: schemas.UserDB,
-):
+) -> None:
     user_in = {
         "user": {
             "email": test_user.email,
@@ -57,7 +57,7 @@ async def test_register_failure_by_existed_user(
     )
 
 
-async def test_user_login_failure(async_client: AsyncClient):
+async def test_user_login_failure(async_client: AsyncClient) -> None:
     login_data = {"user": {"email": "u1596352021xxx", "password": "passwordxxx"}}
     r = await async_client.post("/api/users/login", json=login_data)
     user_response = r.json()
@@ -68,7 +68,7 @@ async def test_user_login_failure(async_client: AsyncClient):
 
 async def test_user_login_failure_incorrect_password(
     async_client: AsyncClient, test_user
-):
+) -> None:
     login_data = {
         "user": {"email": test_user.email, "password": TEST_USER_PASSWORD + "xxx"}
     }
@@ -79,7 +79,9 @@ async def test_user_login_failure_incorrect_password(
     assert user_response["detail"] == "Incorrect email or password"
 
 
-def assert_user_response(expected: schemas.UserDB, actual: schemas.UserResponse):
+def assert_user_response(
+    expected: schemas.UserDB, actual: schemas.UserResponse
+) -> None:
     user_with_token = actual.user
     assert user_with_token.email == expected.email
     assert user_with_token.username == expected.username
@@ -88,7 +90,9 @@ def assert_user_response(expected: schemas.UserDB, actual: schemas.UserResponse)
     assert user_with_token.token
 
 
-async def test_user_login_success(async_client: AsyncClient, test_user: schemas.UserDB):
+async def test_user_login_success(
+    async_client: AsyncClient, test_user: schemas.UserDB
+) -> None:
     login_data = {"user": {"email": test_user.email, "password": TEST_USER_PASSWORD}}
     r = await async_client.post(f"{API_AUTHENTICATION}/login", json=login_data)
     assert r.status_code == status.HTTP_200_OK
@@ -96,12 +100,12 @@ async def test_user_login_success(async_client: AsyncClient, test_user: schemas.
     assert_user_response(expected=test_user, actual=user_response)
 
 
-async def test_retrieve_current_user_without_token(async_client: AsyncClient):
+async def test_retrieve_current_user_without_token(async_client: AsyncClient) -> None:
     r = await async_client.get(API_USERS)
     assert r.status_code == status.HTTP_403_FORBIDDEN
 
 
-async def test_retrieve_current_user_wrong_token(async_client: AsyncClient):
+async def test_retrieve_current_user_wrong_token(async_client: AsyncClient) -> None:
     invalid_authorization = "invalid_authorization"
     headers = {"Authorization": invalid_authorization}
     r = await async_client.get(API_USERS, headers=headers)
@@ -123,7 +127,7 @@ async def test_retrieve_current_user_wrong_token(async_client: AsyncClient):
 
 async def test_retrieve_current_user_but_not_found(
     async_client: AsyncClient, test_user: schemas.UserDB, token: str
-):
+) -> None:
     await delete_user(test_user)
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
     r = await async_client.get(API_USERS, headers=headers)
@@ -135,7 +139,7 @@ async def test_retrieve_current_user_but_not_found(
 
 async def test_retrieve_current_user_success(
     async_client: AsyncClient, test_user: schemas.UserDB, token: str
-):
+) -> None:
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
     r = await async_client.get(API_USERS, headers=headers)
     assert r.status_code == status.HTTP_200_OK
@@ -145,7 +149,7 @@ async def test_retrieve_current_user_success(
 
 async def test_update_current_user_with_new_username(
     async_client: AsyncClient, test_user: schemas.UserDB, token: str
-):
+) -> None:
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
     new_username = f"{test_user.username}xxx"
     user_update = {"user": {"username": new_username}}
@@ -155,7 +159,7 @@ async def test_update_current_user_with_new_username(
 
 async def test_update_current_user_with_new_email(
     async_client: AsyncClient, test_user: schemas.UserDB, token: str
-):
+) -> None:
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
     new_email = f"{test_user.email}xxx"
     user_update = {"user": {"email": new_email}}

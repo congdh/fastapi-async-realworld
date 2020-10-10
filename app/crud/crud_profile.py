@@ -34,27 +34,27 @@ async def get_profile_by_user_id(
 
 
 async def is_following(
-    user: schemas.UserDB, requested_user: Optional[schemas.UserDB]
+    follower: schemas.UserDB, follower_by: Optional[schemas.UserDB]
 ) -> bool:
-    if requested_user is None:
+    if follower_by is None:
         return False
     query = (
         db.followers_assoc.select()
-        .where(user.id == db.followers_assoc.c.follower)
-        .where(requested_user.id == db.followers_assoc.c.followed_by)
+        .where(follower.id == db.followers_assoc.c.follower)
+        .where(follower_by.id == db.followers_assoc.c.followed_by)
     )
     row = await database.fetch_one(query=query)
     return row is not None
 
 
-async def follow(user: schemas.UserDB, requested_user: schemas.UserDB) -> bool:
-    if await is_following(user=user, requested_user=requested_user):
+async def follow(follower: schemas.UserDB, follower_by: schemas.UserDB) -> bool:
+    if await is_following(follower=follower, follower_by=follower_by):
         return False
     query = (
         db.followers_assoc.insert()
         .values(
-            follower=user.id,
-            followed_by=requested_user.id,
+            follower=follower.id,
+            followed_by=follower_by.id,
         )
         .returning(db.followers_assoc.c.follower)
     )
@@ -62,13 +62,13 @@ async def follow(user: schemas.UserDB, requested_user: schemas.UserDB) -> bool:
     return row is not None
 
 
-async def unfollow(user: schemas.UserDB, requested_user: schemas.UserDB) -> bool:
-    if not await is_following(user=user, requested_user=requested_user):
+async def unfollow(follower: schemas.UserDB, follower_by: schemas.UserDB) -> bool:
+    if not await is_following(follower=follower, follower_by=follower_by):
         return False
     query = (
         db.followers_assoc.delete()
-        .where(db.followers_assoc.c.follower == user.id)
-        .where(db.followers_assoc.c.followed_by == requested_user.id)
+        .where(db.followers_assoc.c.follower == follower.id)
+        .where(db.followers_assoc.c.followed_by == follower_by.id)
         .returning(db.followers_assoc.c.follower)
     )
     row = await database.execute(query=query)

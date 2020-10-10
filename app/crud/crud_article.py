@@ -11,6 +11,9 @@ from app.db import database
 
 async def add_article_tags(article_id: int, tags: List[str]) -> None:
     if len(tags) > 0:
+        for tag in tags:
+            if not await crud_tag.is_existed_tag(tag):
+                await crud_tag.create(tag)
         values = [{"article_id": article_id, "tag": tag} for tag in tags]
         query = db.tag_assoc.insert().values(values)
         await database.execute(query=query)
@@ -21,7 +24,7 @@ async def remove_article_tags(article_id: int, tags: List[str]) -> None:
         query = (
             db.tag_assoc.delete()
             .where(db.tag_assoc.c.article_id == article_id)
-            .where(db.tag_assoc.c.tag in tags)
+            .where(db.tag_assoc.c.tag.in_(tags))
         )
         await database.execute(query=query)
 

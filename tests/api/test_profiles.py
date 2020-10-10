@@ -4,20 +4,12 @@ from starlette import status
 
 from app import schemas
 from app.crud import crud_profile
+from tests.utils.profile import assert_profile_with_user
 from tests.utils.user import delete_user
 
 pytestmark = pytest.mark.asyncio
 API_PROFILES = "/api/profiles"
 JWT_TOKEN_PREFIX = "Token"  # noqa: S105
-
-
-def assert_profile_with_user(
-    expected: schemas.UserDB,
-    actual: schemas.Profile,
-) -> None:
-    assert actual.username == expected.username
-    assert actual.bio == expected.bio
-    assert actual.image == expected.image
 
 
 async def test_get_profile_without_authorized(
