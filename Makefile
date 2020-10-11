@@ -46,7 +46,7 @@ test: ## Test
 
 .PHONY: coverage
 coverage: ## Test coverage
-	poetry run pytest --cov=app --cov-report=term-missing tests && coverage xml
+	poetry run pytest --cov=app --cov-report=term-missing --cov-report xml tests
 
 .PHONY: run-dev
 run-dev: ## Run the local development server

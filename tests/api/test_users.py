@@ -176,3 +176,24 @@ async def test_update_current_user_with_new_email(
     assert "token" in user_with_token
     assert "bio" in user_with_token
     assert "image" in user_with_token
+
+
+async def test_update_current_user_with_existed(
+    async_client: AsyncClient,
+    test_user: schemas.UserDB,
+    token: str,
+    other_user: schemas.UserDB,
+) -> None:
+    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    new_username = other_user.username
+    user_update = {"user": {"username": new_username}}
+    r = await async_client.put(API_USERS, json=user_update, headers=headers)
+    assert r.status_code == status.HTTP_400_BAD_REQUEST
+    assert "detail" in r.json()
+    assert r.json()["detail"] == "user with this username already exists"
+
+    user_update = {"user": {"email": other_user.email}}
+    r = await async_client.put(API_USERS, json=user_update, headers=headers)
+    assert r.status_code == status.HTTP_400_BAD_REQUEST
+    assert "detail" in r.json()
+    assert r.json()["detail"] == "user with this email already exists"

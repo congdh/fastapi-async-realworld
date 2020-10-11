@@ -6,8 +6,10 @@ from slugify import slugify
 from starlette import status
 
 from app import schemas
+from app.api.routers.articles import SLUG_NOT_FOUND
 from app.crud import crud_article, crud_profile
 from tests.utils.article import assert_article_in_response, create_test_article
+from tests.utils.error import assert_error_response
 
 pytestmark = pytest.mark.asyncio
 
@@ -60,6 +62,18 @@ async def test_get_article(async_client: AsyncClient, test_user: schemas.UserDB)
     assert_article_in_response(article_in, article, test_user)
 
 
+async def test_update_article_not_existed(
+    async_client: AsyncClient, token: str
+) -> None:
+    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    slug = "abcxyz"
+    updated_data = {"body": "With two hands"}
+    r = await async_client.put(
+        f"{API_ARTICLES}/{slug}", json={"article": updated_data}, headers=headers
+    )
+    assert_error_response(r, status.HTTP_400_BAD_REQUEST, SLUG_NOT_FOUND)
+
+
 async def test_update_article(
     async_client: AsyncClient, test_user: schemas.UserDB, token: str
 ):
@@ -101,9 +115,18 @@ async def test_update_article(
     assert article.favoritesCount == 0
 
 
+async def test_delete_article_not_existed(
+    async_client: AsyncClient, token: str
+) -> None:
+    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    slug = "abcxyz"
+    r = await async_client.delete(f"{API_ARTICLES}/{slug}", headers=headers)
+    assert_error_response(r, status.HTTP_400_BAD_REQUEST, SLUG_NOT_FOUND)
+
+
 async def test_delete_article(
     async_client: AsyncClient, test_user: schemas.UserDB, token: str
-):
+) -> None:
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
     article_in, _article_id = await create_test_article(test_user)
     slug = slugify(article_in.get("title"))
@@ -112,51 +135,77 @@ async def test_delete_article(
     assert r.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.parametrize(
-    "tag,author,favorited",
-    [
-        (None, None, None),
-        ("dragons", None, None),
-        (None, "dragons", None),
-    ],
-)
-async def test_list_articles_without_authentication(
+async def test_delete_article_owner_by_other_user(
     async_client: AsyncClient,
     test_user: schemas.UserDB,
     token: str,
     other_user: schemas.UserDB,
-    tag: str,
-    author: str,
-    favorited: str,
+) -> None:
+    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    article_in, _article_id = await create_test_article(other_user)
+    slug = slugify(article_in.get("title"))
+
+    r = await async_client.delete(f"{API_ARTICLES}/{slug}", headers=headers)
+    assert_error_response(
+        r,
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="can not delete an article owner by other user",
+    )
+
+
+@pytest.mark.parametrize(
+    "tag_filter,author_filter,favorited_filter,authorization",
+    [
+        (False, False, False, False),
+        (True, False, False, False),
+        (False, True, False, False),
+        (False, False, True, False),
+        (False, False, False, True),
+        (True, False, False, True),
+        (False, True, False, True),
+        (False, False, True, True),
+    ],
+)
+async def test_list_articles(
+    async_client: AsyncClient,
+    test_user: schemas.UserDB,
+    token: str,
+    other_user: schemas.UserDB,
+    tag_filter: bool,
+    author_filter: bool,
+    favorited_filter: bool,
+    authorization: bool,
 ):
-    article_in = {
-        "title": "How to train your dragon" + datetime.datetime.now().__str__(),
-        "description": "Ever wonder how?",
-        "body": "You have to believe",
-        "tagList": ["reactjs", "angularjs", "dragons"],
-    }
-    article_in_create = schemas.ArticleInCreate(**article_in)
-    await crud_article.create(article_in_create, other_user.id)
+    article_in, article_id = await create_test_article(other_user)
     await crud_profile.follow(other_user, test_user)
+    await crud_article.favorite(article_id=article_id, user_id=test_user.id)
 
     params = {}
-    if tag:
-        params["tag"] = tag
-    if author:
+    if tag_filter:
+        tags = await crud_article.get_article_tags(article_id)
+        if len(tags):
+            tag = tags[0]
+            params["tag"] = tag
+    if author_filter:
         params["author"] = test_user.username
-    if favorited:
-        params["favorited"] = favorited
-    r = await async_client.get(f"{API_ARTICLES}", params=params)
+    if favorited_filter:
+        params["favorited"] = other_user.username
+    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"} if authorization else {}
+    r = await async_client.get(f"{API_ARTICLES}", params=params, headers=headers)
     assert r.status_code == status.HTTP_200_OK
     assert "articlesCount" in r.json()
     assert "articles" in r.json()
     assert r.json().get("articlesCount") == len(r.json().get("articles"))
     if len(r.json().get("articles")) > 0:
         article = schemas.ArticleForResponse(**r.json().get("articles")[0])
-        assert_article_in_response(article_in, article, other_user)
-        assert (
-            not article.author.following
-        ), "List ariticles without authentication must be not following"
+        assert_article_in_response(
+            expected=article_in,
+            actual=article,
+            author=other_user,
+            favorites_count=1,
+            favorited=authorization,
+            following=authorization,
+        )
 
 
 async def test_feed_articles(
@@ -176,8 +225,21 @@ async def test_feed_articles(
     assert r.json().get("articlesCount") == len(r.json().get("articles"))
     if len(r.json().get("articles")) > 0:
         article = schemas.ArticleForResponse(**r.json().get("articles")[0])
-        assert_article_in_response(article_in, article, other_user)
-        assert article.author.following, "Feed ariticles must be following"
+        assert_article_in_response(
+            expected=article_in, actual=article, author=other_user, following=True
+        )
+
+
+async def test_favorite_unfavorited_article_not_existed(
+    async_client: AsyncClient,
+    token: str,
+) -> None:
+    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    slug = "abcxyz"
+    r = await async_client.post(f"{API_ARTICLES}/{slug}/favorite", headers=headers)
+    assert_error_response(r, status.HTTP_400_BAD_REQUEST, SLUG_NOT_FOUND)
+    r = await async_client.delete(f"{API_ARTICLES}/{slug}/favorite", headers=headers)
+    assert_error_response(r, status.HTTP_400_BAD_REQUEST, SLUG_NOT_FOUND)
 
 
 async def test_favorite_article(

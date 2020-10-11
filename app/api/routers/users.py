@@ -56,11 +56,6 @@ async def update_current_user(
                 detail="user with this email already exists",
             )
     user_id = await crud_user.update(user_id=current_user.id, payload=user_update)
-    if user_id != current_user.id:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="maybe vulnerability!",
-        )
     user_db = await crud_user.get(user_id)
     token = security.create_access_token(current_user.id)
     return schemas.UserResponse(

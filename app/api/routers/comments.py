@@ -31,26 +31,16 @@ async def create_article_comment(
         payload=comment_in, article_id=article_db.id, author_id=current_user.id
     )
     comment_db = await crud_comment.get(comment_id)  # type: ignore
-    if comment_db is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Something wrong. This comment has created but not existed",
-        )
     profile = await crud_profile.get_profile_by_user_id(
-        comment_db.author_id, requested_user=current_user
+        comment_db.author_id, requested_user=current_user  # type: ignore
     )
-    if profile is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This article's author not existed",
-        )
     return schemas.CommentInResponse(
         comment=schemas.CommentForResponse(
-            id=comment_db.id,
-            body=comment_db.body,
-            createdAt=comment_db.created_at,
-            updatedAt=comment_db.updated_at,
-            author=profile,
+            id=comment_db.id,  # type: ignore
+            body=comment_db.body,  # type: ignore
+            createdAt=comment_db.created_at,  # type: ignore
+            updatedAt=comment_db.updated_at,  # type: ignore
+            author=profile,  # type: ignore
         )
     )
 
@@ -79,18 +69,13 @@ async def get_comments_from_an_article(
         profile = await crud_profile.get_profile_by_user_id(
             comment_db.author_id, requested_user=current_user
         )
-        if profile is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="This article's author not existed",
-            )
         comments.append(
             schemas.CommentForResponse(
                 id=comment_db.id,
                 body=comment_db.body,
                 createdAt=comment_db.created_at,
                 updatedAt=comment_db.updated_at,
-                author=profile,
+                author=profile,  # type: ignore
             )
         )
     return schemas.MultipleCommentsInResponse(comments=comments)

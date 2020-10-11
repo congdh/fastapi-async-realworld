@@ -26,29 +26,19 @@ async def create_article(
 ) -> schemas.ArticleInResponse:
     article_id = await crud_article.create(article_in, author_id=current_user.id)
     article = await crud_article.get(article_id)
-    if article is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="you cannot create this article because something wrong",
-        )
     profile = await crud_profile.get_profile_by_user_id(
-        article.author_id, requested_user=current_user
+        article.author_id, requested_user=current_user  # type: ignore
     )
-    if profile is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=AUTHOR_NOT_EXISTED,
-        )
     tags = await crud_article.get_article_tags(article_id)
     favorited = await crud_article.is_article_favorited_by_user(
         article_id, current_user.id
     )
     favorites_count = await crud_article.count_article_favorites(article_id)
     return gen_article_in_response(
-        article=article,
+        article=article,  # type: ignore
         favorited=favorited,
         favorites_count=favorites_count,
-        profile=profile,
+        profile=profile,  # type: ignore
         tags=tags,
     )
 
@@ -73,18 +63,10 @@ async def feed_articles(
         profile = await crud_profile.get_profile_by_user_id(
             article_db.author_id, requested_user=current_user
         )
-        if profile is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=AUTHOR_NOT_EXISTED,
-            )
         tags = await crud_article.get_article_tags(article_db.id)
-        if current_user:
-            favorited = await crud_article.is_article_favorited_by_user(
-                article_db.id, current_user.id
-            )
-        else:
-            favorited = False
+        favorited = await crud_article.is_article_favorited_by_user(
+            article_db.id, current_user.id
+        )
         favorites_count = await crud_article.count_article_favorites(article_db.id)
         article_for_reponse = schemas.ArticleForResponse(
             slug=article_db.slug,
@@ -93,7 +75,7 @@ async def feed_articles(
             body=article_db.body,
             createdAt=article_db.created_at,
             updatedAt=article_db.updated_at,
-            author=profile,
+            author=profile,  # type: ignore
             tagList=tags,
             favorited=favorited,
             favoritesCount=favorites_count,

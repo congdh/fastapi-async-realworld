@@ -18,15 +18,21 @@ async def create_test_article(author: schemas.UserDB) -> Tuple:
 
 
 def assert_article_in_response(
-    expected: Dict, actual: schemas.ArticleInResponse, author: schemas.UserDB
+    expected: Dict,
+    actual: schemas.ArticleInResponse,
+    author: schemas.UserDB,
+    favorites_count=0,
+    favorited=False,
+    following=False,
 ) -> None:
     assert actual.title == expected.get("title")
     assert actual.description == expected.get("description")
     assert actual.body == expected.get("body")
     assert actual.author.username == author.username
+    assert actual.author.following == following
     assert hasattr(actual, "tagList")
     assert actual.tagList == expected.get("tagList")
     assert hasattr(actual, "favorited")
-    assert not actual.favorited
+    assert actual.favorited == favorited
     assert hasattr(actual, "favoritesCount")
-    assert actual.favoritesCount == 0
+    assert actual.favoritesCount == favorites_count

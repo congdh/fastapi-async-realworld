@@ -121,9 +121,9 @@ async def test_get_all(
     async_client: AsyncClient,
     test_user: schemas.UserDB,
     other_user: schemas.UserDB,
-    tag_filter: str,
-    author_filter: str,
-    favorited_filter: str,
+    tag_filter: bool,
+    author_filter: bool,
+    favorited_filter: bool,
 ):
     _article_in, article_id = await create_test_article(test_user)
     tag = None
