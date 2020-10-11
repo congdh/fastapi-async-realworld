@@ -8,7 +8,12 @@ from starlette import status
 from app import schemas
 from app.api.routers.articles import SLUG_NOT_FOUND
 from app.crud import crud_article, crud_profile
-from tests.utils.article import assert_article_in_response, create_test_article
+from tests.utils.article import (
+    NOT_EXISTED_SLUG,
+    TEST_UPDATED_BODY,
+    assert_article_in_response,
+    create_test_article,
+)
 from tests.utils.error import assert_error_response
 
 pytestmark = pytest.mark.asyncio
@@ -47,8 +52,7 @@ async def test_create_articles(
 
 
 async def test_get_article_not_exited(async_client: AsyncClient):
-    slug = "not-existed-slug"
-    r = await async_client.get(f"{API_ARTICLES}/{slug}")
+    r = await async_client.get(f"{API_ARTICLES}/{NOT_EXISTED_SLUG}")
     assert r.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -66,10 +70,11 @@ async def test_update_article_not_existed(
     async_client: AsyncClient, token: str
 ) -> None:
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
-    slug = "abcxyz"
-    updated_data = {"body": "With two hands"}
+    updated_data = {"body": TEST_UPDATED_BODY}
     r = await async_client.put(
-        f"{API_ARTICLES}/{slug}", json={"article": updated_data}, headers=headers
+        f"{API_ARTICLES}/{NOT_EXISTED_SLUG}",
+        json={"article": updated_data},
+        headers=headers,
     )
     assert_error_response(r, status.HTTP_400_BAD_REQUEST, SLUG_NOT_FOUND)
 
@@ -81,7 +86,7 @@ async def test_update_article(
     article_in, _article_id = await create_test_article(test_user)
     slug = slugify(article_in.get("title"))
 
-    updated_data = {"body": "With two hands"}
+    updated_data = {"body": TEST_UPDATED_BODY}
     r = await async_client.put(
         f"{API_ARTICLES}/{slug}", json={"article": updated_data}, headers=headers
     )
@@ -119,8 +124,7 @@ async def test_delete_article_not_existed(
     async_client: AsyncClient, token: str
 ) -> None:
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
-    slug = "abcxyz"
-    r = await async_client.delete(f"{API_ARTICLES}/{slug}", headers=headers)
+    r = await async_client.delete(f"{API_ARTICLES}/{NOT_EXISTED_SLUG}", headers=headers)
     assert_error_response(r, status.HTTP_400_BAD_REQUEST, SLUG_NOT_FOUND)
 
 
@@ -235,10 +239,13 @@ async def test_favorite_unfavorited_article_not_existed(
     token: str,
 ) -> None:
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
-    slug = "abcxyz"
-    r = await async_client.post(f"{API_ARTICLES}/{slug}/favorite", headers=headers)
+    r = await async_client.post(
+        f"{API_ARTICLES}/{NOT_EXISTED_SLUG}/favorite", headers=headers
+    )
     assert_error_response(r, status.HTTP_400_BAD_REQUEST, SLUG_NOT_FOUND)
-    r = await async_client.delete(f"{API_ARTICLES}/{slug}/favorite", headers=headers)
+    r = await async_client.delete(
+        f"{API_ARTICLES}/{NOT_EXISTED_SLUG}/favorite", headers=headers
+    )
     assert_error_response(r, status.HTTP_400_BAD_REQUEST, SLUG_NOT_FOUND)
 
 
@@ -255,16 +262,13 @@ async def test_favorite_article(
     r = await async_client.post(f"{API_ARTICLES}/{slug}/favorite", headers=headers)
     assert r.status_code == status.HTTP_200_OK
     article = schemas.ArticleInResponse(**r.json()).article
-    assert article.title == article_in.get("title")
-    assert article.description == article_in.get("description")
-    assert article.body == article_in.get("body")
-    assert article.author.username == other_user.username
-    assert hasattr(article, "tagList")
-    assert article.tagList == article_in.get("tagList")
-    assert hasattr(article, "favorited")
-    assert article.favorited, "Favorited must be True"
-    assert hasattr(article, "favoritesCount")
-    assert article.favoritesCount > 0, "favoritesCount must great than 0"
+    assert_article_in_response(
+        expected=article_in,
+        actual=article,
+        author=other_user,
+        favorited=True,
+        favorites_count=1,
+    )
 
 
 async def test_unfavorite_article(
@@ -281,12 +285,6 @@ async def test_unfavorite_article(
     r = await async_client.delete(f"{API_ARTICLES}/{slug}/favorite", headers=headers)
     assert r.status_code == status.HTTP_200_OK
     article = schemas.ArticleInResponse(**r.json()).article
-    assert article.title == article_in.get("title")
-    assert article.description == article_in.get("description")
-    assert article.body == article_in.get("body")
-    assert article.author.username == other_user.username
-    assert hasattr(article, "tagList")
-    assert article.tagList == article_in.get("tagList")
-    assert hasattr(article, "favorited")
-    assert not article.favorited, "Favorited must be False"
-    assert hasattr(article, "favoritesCount")
+    assert_article_in_response(
+        expected=article_in, actual=article, author=other_user, favorited=False
+    )

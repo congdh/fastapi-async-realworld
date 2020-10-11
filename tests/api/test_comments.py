@@ -6,8 +6,8 @@ from starlette import status
 from app import schemas
 from app.api.routers.articles import SLUG_NOT_FOUND
 from app.crud import crud_article, crud_comment
-from tests.utils.article import create_test_article
-from tests.utils.comment import create_test_comment
+from tests.utils.article import NOT_EXISTED_SLUG, create_test_article
+from tests.utils.comment import TEST_COMMENT_BODY, create_test_comment
 from tests.utils.error import assert_error_response
 
 pytestmark = pytest.mark.asyncio
@@ -21,9 +21,9 @@ async def test_add_comments_to_an_article_not_existed(
     token: str,
 ):
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
-    slug = "not-existed-article"
+    slug = NOT_EXISTED_SLUG
 
-    comment_in = {"body": "His name was my name too."}
+    comment_in = {"body": TEST_COMMENT_BODY}
     r = await async_client.post(
         f"{API_ARTICLES}/{slug}/comments", json={"comment": comment_in}, headers=headers
     )
@@ -41,7 +41,7 @@ async def test_add_comments_to_an_article(
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
     slug = slugify(article_in.get("title"))
 
-    comment_in = {"body": "His name was my name too."}
+    comment_in = {"body": TEST_COMMENT_BODY}
     r = await async_client.post(
         f"{API_ARTICLES}/{slug}/comments", json={"comment": comment_in}, headers=headers
     )
@@ -55,8 +55,7 @@ async def test_add_comments_to_an_article(
 async def test_get_comments_from_an_article_not_existed(
     async_client: AsyncClient,
 ):
-    slug = "not-existed-article"
-    r = await async_client.get(f"{API_ARTICLES}/{slug}/comments")
+    r = await async_client.get(f"{API_ARTICLES}/{NOT_EXISTED_SLUG}/comments")
     assert_error_response(
         r, status.HTTP_400_BAD_REQUEST, "article with this slug not found"
     )
@@ -70,7 +69,7 @@ async def test_get_comments_from_an_article(
 ):
     article_in, article_id = await create_test_article(other_user)
 
-    comment_in = schemas.CommentInCreate(body="His name was my name too.")
+    comment_in = schemas.CommentInCreate(body=TEST_COMMENT_BODY)
     await crud_comment.create(
         payload=comment_in, article_id=article_id, author_id=test_user.id
     )
@@ -97,10 +96,9 @@ async def test_delete_comment_for_article_not_existed(
     token: str,
 ) -> None:
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
-    slug = "not-existed-article"
     comment_id = 1
     r = await async_client.delete(
-        f"{API_ARTICLES}/{slug}/comments/{comment_id}", headers=headers
+        f"{API_ARTICLES}/{NOT_EXISTED_SLUG}/comments/{comment_id}", headers=headers
     )
     assert_error_response(r, status.HTTP_400_BAD_REQUEST, SLUG_NOT_FOUND)
 
@@ -111,7 +109,7 @@ async def test_delete_comment_not_existed(
     token: str,
     other_user: schemas.UserDB,
 ) -> None:
-    article_in, article_id = await create_test_article(other_user)
+    article_in, _article_id = await create_test_article(other_user)
 
     headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
     slug = slugify(article_in.get("title"))

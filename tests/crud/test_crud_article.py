@@ -5,7 +5,7 @@ from slugify import slugify
 
 from app import schemas
 from app.crud import crud_article, crud_profile
-from tests.utils.article import create_test_article
+from tests.utils.article import NOT_EXISTED_SLUG, TEST_UPDATED_BODY, create_test_article
 
 pytestmark = pytest.mark.asyncio
 
@@ -19,8 +19,7 @@ async def test_create_article(
 
 
 async def test_get_article_with_slug_not_existed(async_client: AsyncClient) -> None:
-    slug = "not-existed-slug"
-    assert not await crud_article.get_article_by_sluq(slug=slug)
+    assert not await crud_article.get_article_by_sluq(slug=NOT_EXISTED_SLUG)
 
 
 async def test_get_article_with_id_not_existed(async_client: AsyncClient) -> None:
@@ -55,7 +54,7 @@ async def test_article_tags(
     async_client: AsyncClient,
     test_user: schemas.UserDB,
 ) -> None:
-    article_in, article_id = await create_test_article(author=test_user)
+    _article_in, article_id = await create_test_article(author=test_user)
     faker = Faker()
     tag = faker.word()
     tags = [tag, faker.word()]
@@ -96,7 +95,7 @@ async def test_update_article(
     article_in, article_id = await create_test_article(test_user)
     article_db = await crud_article.get(article_id)
 
-    updated_body = "With two hands"
+    updated_body = TEST_UPDATED_BODY
     faker = Faker()
     tags = [faker.word(), faker.word()]
     await crud_article.update(

@@ -4,6 +4,9 @@ from typing import Dict, Tuple
 from app import schemas
 from app.crud import crud_article
 
+NOT_EXISTED_SLUG = "not-existed-article"
+TEST_UPDATED_BODY = "With two hands"
+
 
 async def create_test_article(author: schemas.UserDB) -> Tuple:
     article_in = {
