@@ -99,11 +99,6 @@ async def get_article_response_by_slug(
     profile = await crud_profile.get_profile_by_user_id(
         article.author_id, requested_user=current_user
     )
-    if profile is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=AUTHOR_NOT_EXISTED,
-        )
     tags = await crud_article.get_article_tags(article.id)
     if current_user:
         favorited = await crud_article.is_article_favorited_by_user(
@@ -116,7 +111,7 @@ async def get_article_response_by_slug(
         article=article,
         favorited=favorited,
         favorites_count=favorites_count,
-        profile=profile,
+        profile=profile,  # type: ignore
         tags=tags,
     )
 
@@ -225,11 +220,6 @@ async def list_articles(
         profile = await crud_profile.get_profile_by_user_id(
             article_db.author_id, requested_user=current_user
         )
-        if profile is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="user not existed",
-            )
         tags = await crud_article.get_article_tags(article_db.id)
         if current_user:
             is_favorited = await crud_article.is_article_favorited_by_user(
@@ -245,7 +235,7 @@ async def list_articles(
             body=article_db.body,
             createdAt=article_db.created_at,
             updatedAt=article_db.updated_at,
-            author=profile,
+            author=profile,  # type: ignore
             tagList=tags,
             favorited=is_favorited,
             favoritesCount=favorites_count,
