@@ -15,6 +15,7 @@ clean: ## Remove all build, test, coverage and Python artifacts
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
+	find . -name '.pytest_cache' -exec rm -fr {} +
 
 .PHONY: poetry
 poetry: ## Install poetry
@@ -55,3 +56,7 @@ run-dev: ## Run the local development server
 .PHONY: run
 run: ## Run the local server
 	uvicorn app.main:app --lifespan on --workers 1 --host 0.0.0.0 --port 8080
+
+.PHONY: bandit
+bandit: ## Lint files
+	poetry run bandit -r --ini setup.cfg

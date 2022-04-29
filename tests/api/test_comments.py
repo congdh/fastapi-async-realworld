@@ -13,14 +13,14 @@ from tests.utils.error import assert_error_response
 pytestmark = pytest.mark.asyncio
 
 API_ARTICLES = "/api/articles"
-JWT_TOKEN_PREFIX = "Token"  # noqa: S105
+JWT_PREFIX = "Token"
 
 
 async def test_add_comments_to_an_article_not_existed(
     async_client: AsyncClient,
     token: str,
 ):
-    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    headers = {"Authorization": f"{JWT_PREFIX} {token}"}
     slug = NOT_EXISTED_SLUG
 
     comment_in = {"body": TEST_COMMENT_BODY}
@@ -38,7 +38,7 @@ async def test_add_comments_to_an_article(
 ):
     article_in, _article_id = await create_test_article(other_user)
 
-    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    headers = {"Authorization": f"{JWT_PREFIX} {token}"}
     slug = slugify(article_in.get("title"))
 
     comment_in = {"body": TEST_COMMENT_BODY}
@@ -95,7 +95,7 @@ async def test_delete_comment_for_article_not_existed(
     async_client: AsyncClient,
     token: str,
 ) -> None:
-    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    headers = {"Authorization": f"{JWT_PREFIX} {token}"}
     comment_id = 1
     r = await async_client.delete(
         f"{API_ARTICLES}/{NOT_EXISTED_SLUG}/comments/{comment_id}", headers=headers
@@ -111,7 +111,7 @@ async def test_delete_comment_not_existed(
 ) -> None:
     article_in, _article_id = await create_test_article(other_user)
 
-    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    headers = {"Authorization": f"{JWT_PREFIX} {token}"}
     slug = slugify(article_in.get("title"))
     comment_id = 999999
     r = await async_client.delete(
@@ -137,7 +137,7 @@ async def test_delete_comment_not_belong_to_article(
     article_in, article_id = await create_test_article(other_user)
     second_article = await crud_article.get(article_id)
 
-    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    headers = {"Authorization": f"{JWT_PREFIX} {token}"}
     slug = slugify(second_article.title)
     r = await async_client.delete(
         f"{API_ARTICLES}/{slug}/comments/{comment_id}", headers=headers
@@ -159,7 +159,7 @@ async def test_delete_comment_not_belong_to_yourself(
         article=article, author=other_user
     )
 
-    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    headers = {"Authorization": f"{JWT_PREFIX} {token}"}
     slug = article.slug
     r = await async_client.delete(
         f"{API_ARTICLES}/{slug}/comments/{comment_id}", headers=headers
@@ -183,7 +183,7 @@ async def test_delete_comment_for_article(
         article=article, author=test_user
     )
 
-    headers = {"Authorization": f"{JWT_TOKEN_PREFIX} {token}"}
+    headers = {"Authorization": f"{JWT_PREFIX} {token}"}
     slug = slugify(article_in.get("title"))
     r = await async_client.delete(
         f"{API_ARTICLES}/{slug}/comments/{comment_id}", headers=headers

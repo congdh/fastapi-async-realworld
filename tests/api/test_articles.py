@@ -19,7 +19,7 @@ from tests.utils.error import assert_error_response
 pytestmark = pytest.mark.asyncio
 
 API_ARTICLES = "/api/articles"
-JWT_TOKEN_PREFIX = "Token"  # noqa: S105
+JWT_TOKEN_PREFIX = "Token"
 
 
 async def test_create_articles_without_authen(async_client: AsyncClient):

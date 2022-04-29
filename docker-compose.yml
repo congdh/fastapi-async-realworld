@@ -4,7 +4,7 @@ services:
   app:
     build: .
     ports:
-      - 80:80
+      - "80:80"
     environment:
       - POSTGRES_SERVER=db
     healthcheck:

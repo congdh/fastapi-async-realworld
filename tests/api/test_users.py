@@ -12,7 +12,7 @@ pytestmark = pytest.mark.asyncio
 
 API_AUTHENTICATION = "/api/users"
 API_USERS = "/api/user"
-JWT_TOKEN_PREFIX = "Token"  # noqa: S105
+JWT_TOKEN_PREFIX = "Token"
 
 
 async def test_register_success(async_client: AsyncClient) -> None:

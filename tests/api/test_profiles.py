@@ -9,7 +9,7 @@ from tests.utils.user import delete_user
 
 pytestmark = pytest.mark.asyncio
 API_PROFILES = "/api/profiles"
-JWT_TOKEN_PREFIX = "Token"  # noqa: S105
+JWT_TOKEN_PREFIX = "Token"
 
 
 async def test_get_profile_without_authorized(
