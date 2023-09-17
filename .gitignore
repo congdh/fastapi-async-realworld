@@ -285,3 +285,4 @@ dmypy.json
 
 /.idea/*
 sql_app.db
+/.vscode/*
