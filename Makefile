@@ -39,7 +39,7 @@ lint: ## Lint files
 
 .PHONY: pre-commit
 pre-commit: ## Format & lint before commit
-	poetry run pre-commit run --all-file
+	poetry run time pre-commit run --all-file
 
 .PHONY: test
 test: ## Test

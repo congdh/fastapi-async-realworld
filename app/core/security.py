@@ -33,11 +33,11 @@ def get_user_id_from_token(token: str) -> str:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=ALGORITHM)
         user_id = payload.get("sub", None)
         return user_id
-    except (jwt.JWTError, ValidationError):
+    except (jwt.JWTError, ValidationError) as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
-        )
+        ) from exc
 
 
 def verify_password(plain_password: SecretStr, hashed_password: str) -> bool:

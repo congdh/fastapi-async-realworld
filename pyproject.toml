@@ -19,6 +19,7 @@ bcrypt = "^3.2.0"
 alembic = "^1.4.3"
 python-slugify = "^4.0.1"
 loguru = "^0.6.0"
+ruff = "^0.0.290"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0.1"
@@ -43,3 +44,39 @@ types-python-slugify = "^5.0.4"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+[tool.ruff]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"docs_src/dependencies/tutorial007.py" = ["F821"]
+"docs_src/dependencies/tutorial008.py" = ["F821"]
+"docs_src/dependencies/tutorial009.py" = ["F821"]
+"docs_src/dependencies/tutorial010.py" = ["F821"]
+"docs_src/custom_response/tutorial007.py" = ["B007"]
+"docs_src/dataclasses/tutorial003.py" = ["I001"]
+"docs_src/path_operation_advanced_configuration/tutorial007.py" = ["B904"]
+"docs_src/path_operation_advanced_configuration/tutorial007_pv1.py" = ["B904"]
+"docs_src/custom_request_and_route/tutorial002.py" = ["B904"]
+"docs_src/dependencies/tutorial008_an.py" = ["F821"]
+"docs_src/dependencies/tutorial008_an_py39.py" = ["F821"]
+"docs_src/query_params_str_validations/tutorial012_an.py" = ["B006"]
+"docs_src/query_params_str_validations/tutorial012_an_py39.py" = ["B006"]
+"docs_src/query_params_str_validations/tutorial013_an.py" = ["B006"]
+"docs_src/query_params_str_validations/tutorial013_an_py39.py" = ["B006"]
+
+[tool.ruff.isort]
+known-third-party = ["fastapi", "pydantic", "starlette"]

@@ -16,11 +16,11 @@ def authorization_heder_token_required(
 ) -> str:
     try:
         token_prefix, token = api_key.split(" ")
-    except ValueError:
+    except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="unsupported authorization type",
-        )
+        ) from exc
     if token_prefix != JWT_PREFIX:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
