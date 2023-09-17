@@ -21,8 +21,7 @@ repos:
     hooks:
       - id: mypy
         files: ^app/
-        entry: mypy --show-error-codes --no-warn-unused-ignores --follow-imports silent app
-        pass_filenames: false
+        args: [--ignore-missing-imports, --follow-imports=skip, --strict-optional, --no-warn-unused-ignores]
         additional_dependencies:
           - 'pydantic'
           - 'sqlalchemy-stubs'

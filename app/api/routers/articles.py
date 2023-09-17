@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from starlette import status
@@ -208,9 +208,9 @@ async def list_articles(
     current_user: schemas.UserDB = Depends(deps.get_current_user(required=False)),
     limit: int = 20,
     offset: int = 0,
-    tag: str = None,
-    author: str = None,
-    favorited: str = None,
+    tag: Optional[str] = None,
+    author: Optional[str] = None,
+    favorited: Optional[str] = None,
 ) -> schemas.MultipleArticlesInResponse:
     article_dbs = await crud_article.get_all(
         limit=limit, offset=offset, tag=tag, author=author, favorited=favorited

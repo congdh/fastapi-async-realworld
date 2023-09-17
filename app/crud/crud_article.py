@@ -124,9 +124,9 @@ async def delete(article_db: schemas.ArticleDB) -> None:
 async def get_all(
     limit: int = 20,
     offset: int = 0,
-    tag: str = None,
-    author: str = None,
-    favorited: str = None,
+    tag: Optional[str] = None,
+    author: Optional[str] = None,
+    favorited: Optional[str] = None,
 ) -> List[schemas.ArticleDB]:
     need_join = False
     j = db.articles

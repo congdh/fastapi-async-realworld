@@ -91,7 +91,6 @@ async def delete_comment_for_article(
     comment_id: int,
     current_user: schemas.UserDB = Depends(deps.get_current_user()),
 ) -> None:
-
     article_db = await crud_article.get_article_by_sluq(slug=slug)
     if article_db is None:
         raise HTTPException(
